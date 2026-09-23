@@ -5,7 +5,7 @@ import { getMultiplier, getNodeStatus, isModeUnlockedByTree } from './logic';
 import { NODES_BY_ID, SKILL_TREE } from './treeData';
 
 function meta(partial: Partial<MetaState> = {}): MetaState {
-  return { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', ...partial };
+  return { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], ...partial };
 }
 
 function node(id: string) {

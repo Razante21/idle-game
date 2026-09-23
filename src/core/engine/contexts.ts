@@ -1,3 +1,4 @@
+import { achievementMultiplier } from '../achievements';
 import { MODES } from '../modeRegistry';
 import { getMultiplier } from '../skillTree/logic';
 import type { EssenceRates, Flag, MetaState, ModeBonus, ModeContext, ModeId, ModeStates } from '../types';
@@ -7,7 +8,16 @@ export function unlockedModes(meta: MetaState) {
 }
 
 export function collectBonuses(meta: MetaState, modes: ModeStates): ModeBonus[] {
-  return unlockedModes(meta).flatMap((m) => m.provides?.(modes[m.id]) ?? []);
+  const bonuses = unlockedModes(meta).flatMap((m) => m.provides?.(modes[m.id]) ?? []);
+  if (meta.achievements.length > 0) {
+    bonuses.push({
+      target: 'global',
+      stat: 'essence',
+      value: achievementMultiplier(meta.achievements.length),
+      source: 'Conquistas',
+    });
+  }
+  return bonuses;
 }
 
 export function collectFlags(meta: MetaState, modes: ModeStates): Set<Flag> {

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AchievementsView } from './components/AchievementsView';
 import { ModeLinks } from './components/ModeLinks';
 import { ModeSelectorBar } from './components/ModeSelectorBar';
 import { ResourceHUD } from './components/ResourceHUD';
+import { ACHIEVEMENTS } from './core/achievements';
 import { bonusesFor, buildContexts, collectBonuses } from './core/engine/contexts';
 import { clearSave, saveGame } from './core/engine/persistence';
 import { startTickLoop } from './core/engine/tickLoop';
@@ -12,6 +14,7 @@ import { useGameStore } from './core/store/gameStore';
 import styles from './App.module.css';
 
 const AUTOSAVE_MS = 10_000;
+const TOAST_MS = 3_500;
 
 export interface WelcomeReport {
   elapsedSeconds: number;
@@ -24,7 +27,16 @@ function persistNow() {
 
 export function App({ welcome }: { welcome: WelcomeReport | null }) {
   const [treeOpen, setTreeOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [welcomeReport, setWelcomeReport] = useState(welcome);
+  const toastId = useGameStore((s) => s.toasts[0]);
+  const toast = toastId ? ACHIEVEMENTS.find((x) => x.id === toastId) : undefined;
+
+  useEffect(() => {
+    if (!toastId) return;
+    const timer = window.setTimeout(() => useGameStore.getState().dismissToast(), TOAST_MS);
+    return () => window.clearTimeout(timer);
+  }, [toastId]);
 
   useEffect(() => {
     const stopLoop = startTickLoop((seconds) => useGameStore.getState().advance(seconds));
@@ -68,7 +80,12 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
 
   return (
     <div className={styles.app}>
-      <ResourceHUD onOpenTree={() => setTreeOpen(true)} onSave={persistNow} onReset={handleReset} />
+      <ResourceHUD
+        onOpenTree={() => setTreeOpen(true)}
+        onOpenAchievements={() => setAchievementsOpen(true)}
+        onSave={persistNow}
+        onReset={handleReset}
+      />
 
       <main className={styles.main}>
         <div className={styles.modeHeader}>
@@ -84,6 +101,15 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
       <ModeSelectorBar />
 
       {treeOpen && <SkillTreeView onClose={() => setTreeOpen(false)} />}
+      {achievementsOpen && <AchievementsView onClose={() => setAchievementsOpen(false)} />}
+
+      {toast && (
+        <div className={styles.toast} role="status">
+          <span className={styles.toastLabel}>★ Conquista</span>
+          <strong>{toast.name}</strong>
+          <span className={styles.toastDesc}>{toast.description} · +2% Essência</span>
+        </div>
+      )}
 
       {welcomeReport && (
         <div className={styles.welcomeBackdrop}>

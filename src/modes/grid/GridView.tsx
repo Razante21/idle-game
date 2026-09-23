@@ -1,9 +1,13 @@
 import { useState } from 'react';
+import { Tabs } from '../../components/Tabs';
 import { formatNumber } from '../../core/format';
 import type { ModeViewProps } from '../../core/types';
 import s from '../shared.module.css';
 import g from './GridView.module.css';
 import {
+  MAX_LEVEL,
+  PATTERNS,
+  PATTERN_IDS,
   PIECES,
   PIECE_TYPES,
   beaconBonuses,
@@ -12,23 +16,34 @@ import {
   dustPerSecond,
   expand,
   expandCost,
+  fuse,
+  fusionCost,
+  inventoryCount,
+  isAbsorbed,
+  patternMultiplier,
   pieceCost,
   place,
   remove,
   type GridState,
-  type PieceType,
+  type Piece,
 } from './logic';
 
+type Tab = 'pecas' | 'padroes';
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V'];
+
 export function GridView({ state, ctx, essenceRate, update }: ModeViewProps<GridState>) {
-  const [selected, setSelected] = useState<PieceType | null>('ana');
+  const [selected, setSelected] = useState<Piece | null>({ type: 'ana', level: 1 });
+  const [tab, setTab] = useState<Tab>('pecas');
   const diagonal = ctx.hasFlag('constelacao.diagonal');
-  const mult = ctx.multiplier('production');
+  const mult = ctx.multiplier('production') * patternMultiplier(state);
   const nextExpand = expandCost(state);
   const beacons = beaconBonuses(state);
+  const need = fusionCost(ctx);
 
   const onCell = (i: number) => {
     const current = state.cells[i];
-    if (selected && state.inventory[selected] > 0 && current !== selected) {
+    const same = current && selected && current.type === selected.type && current.level === selected.level;
+    if (selected && inventoryCount(state, selected) > 0 && !same) {
       update((x) => place(x, i, selected));
     } else if (current) {
       update((x) => remove(x, i));
@@ -64,22 +79,24 @@ export function GridView({ state, ctx, essenceRate, update }: ModeViewProps<Grid
           >
             {state.cells.map((p, i) => {
               const out = cellOutput(state, i, diagonal) * mult;
+              const absorbed = isAbsorbed(state, i, diagonal);
               return (
                 <button
                   key={i}
-                  className={`${g.cell} ${p ? g[p] : g.empty}`}
+                  className={`${g.cell} ${p ? g[p.type] : g.empty} ${absorbed ? g.absorbed : ''}`}
                   onClick={() => onCell(i)}
-                  title={p ? `${PIECES[p].name} — clique para recolher` : 'Vazio'}
-                  aria-label={p ? PIECES[p].name : `Célula vazia ${i + 1}`}
+                  title={p ? `${PIECES[p.type].name} nível ${p.level} — clique para recolher` : 'Vazio'}
+                  aria-label={p ? `${PIECES[p.type].name} nível ${p.level}` : `Célula vazia ${i + 1}`}
                 >
-                  {p && <span className={g.symbol}>{PIECES[p].symbol}</span>}
-                  {out > 0 && <span className={g.out}>{formatNumber(out)}</span>}
+                  {p && <span className={g.symbol}>{PIECES[p.type].symbol}</span>}
+                  {p && p.level > 1 && <span className={g.level}>{ROMAN[p.level]}</span>}
+                  {out > 0 && <span className={g.out}>{absorbed ? '↘' : formatNumber(out)}</span>}
                 </button>
               );
             })}
           </div>
           <p className={s.muted}>
-            Escolha uma peça ao lado e clique numa célula. Clique numa peça colocada para devolvê-la ao inventário.
+            Selecione uma peça e clique numa célula. Clique numa peça colocada para devolvê-la ao inventário.
           </p>
           {nextExpand !== null && (
             <button disabled={state.dust < nextExpand} onClick={() => update(expand)}>
@@ -102,35 +119,81 @@ export function GridView({ state, ctx, essenceRate, update }: ModeViewProps<Grid
       </div>
 
       <div className={s.stack}>
-        <h2 className={s.sectionTitle}>Peças</h2>
-        {PIECE_TYPES.map((t) => {
-          const def = PIECES[t];
-          const price = pieceCost(state, t);
-          return (
-            <section key={t} className={`${s.panel} ${selected === t ? g.selected : ''}`}>
-              <div className={s.row}>
-                <div className={s.stat}>
-                  <span className={s.value}>
-                    <span className={g[t]}>{def.symbol}</span> {def.name}{' '}
-                    <span className={s.muted}>({state.inventory[t]} no inventário)</span>
-                  </span>
-                  <span className={s.muted}>{def.description}</span>
-                </div>
-                <div className={s.buttons}>
-                  <button
-                    aria-pressed={selected === t}
-                    onClick={() => setSelected(selected === t ? null : t)}
-                  >
-                    {selected === t ? 'Selecionada' : 'Selecionar'}
-                  </button>
+        <Tabs<Tab>
+          tabs={[
+            { id: 'pecas', label: 'Peças' },
+            { id: 'padroes', label: `Padrões ${state.patterns.length}/${PATTERN_IDS.length}` },
+          ]}
+          active={tab}
+          onChange={setTab}
+        />
+
+        {tab === 'pecas' &&
+          PIECE_TYPES.map((t) => {
+            const def = PIECES[t];
+            const price = pieceCost(state, t);
+            const levels = state.inventory[t]
+              .map((count, idx) => ({ level: idx + 1, count }))
+              .filter((l) => l.count > 0 || state.cells.some((p) => p?.type === t && p.level === l.level));
+            return (
+              <section key={t} className={`${s.panel} ${selected?.type === t ? g.selected : ''}`}>
+                <div className={s.row}>
+                  <div className={s.stat}>
+                    <span className={s.value}>
+                      <span className={g[t]}>{def.symbol}</span> {def.name}
+                    </span>
+                    <span className={s.muted}>{def.description}</span>
+                  </div>
                   <button disabled={state.dust < price} onClick={() => update((x) => buy(x, t))}>
                     Comprar ({formatNumber(price)})
                   </button>
                 </div>
-              </div>
-            </section>
-          );
-        })}
+                {levels.length > 0 && (
+                  <div className={g.levels}>
+                    {levels.map(({ level, count }) => {
+                      const isSel = selected?.type === t && selected.level === level;
+                      return (
+                        <div key={level} className={g.levelChip}>
+                          <button
+                            aria-pressed={isSel}
+                            className={isSel ? g.levelSelected : ''}
+                            onClick={() => setSelected(isSel ? null : { type: t, level })}
+                          >
+                            nv {ROMAN[level]} · {count}
+                          </button>
+                          {level < MAX_LEVEL && count >= need && (
+                            <button onClick={() => update((x) => fuse(x, { type: t, level }, ctx))}>
+                              Fundir {need}→{ROMAN[level + 1]}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            );
+          })}
+
+        {tab === 'padroes' && (
+          <section className={s.panel}>
+            <p className={s.muted}>
+              Forme desenhos no céu para descobrir constelações. Cada uma dá +25% de poeira para sempre, mesmo que
+              você desfaça o desenho. Bônus atual: x{formatNumber(patternMultiplier(state))}.
+            </p>
+            <div className={s.stack}>
+              {PATTERN_IDS.map((id) => {
+                const found = state.patterns.includes(id);
+                return (
+                  <div key={id} className={s.row}>
+                    <span className={found ? s.value : s.muted}>{found ? PATTERNS[id].name : '???'}</span>
+                    <span className={found ? s.good : s.muted}>{found ? 'Descoberta' : PATTERNS[id].hint}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

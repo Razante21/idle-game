@@ -8,16 +8,23 @@ export type Stat = 'production' | 'click' | 'essence';
 export type Flag =
   | 'nucleo.autoclick'
   | 'nucleo.milestone20'
+  | 'nucleo.surtoFrequente'
   | 'fabrica.eficiencia'
+  | 'fabrica.armazemInfinito'
+  | 'fabrica.contratosDobrados'
   | 'constelacao.diagonal'
+  | 'constelacao.fusaoBarata'
   | 'expedicao.segundaChance'
-  | 'expedicao.autoGratis';
+  | 'expedicao.autoGratis'
+  | 'expedicao.lojaDesconto'
+  | 'expedicao.maldicaoLeve';
 
 export interface MetaState {
   essence: number;
   totalEssence: number;
   purchasedNodes: string[];
   activeModeId: ModeId;
+  achievements: string[];
 }
 
 export type EssenceRates = Record<ModeId, number>;
