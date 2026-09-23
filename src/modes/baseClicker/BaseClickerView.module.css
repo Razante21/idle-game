@@ -1,0 +1,149 @@
+.root {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .root {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.core {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.label {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 12px;
+}
+
+.energy {
+  font-size: 44px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.rate {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.coreButton {
+  margin: 20px 0 12px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px solid var(--accent);
+  background: radial-gradient(circle at 50% 40%, var(--accent-soft), var(--surface-2) 70%);
+  box-shadow: 0 0 32px var(--accent-glow);
+  transition: transform 80ms ease;
+}
+
+.coreButton:hover {
+  box-shadow: 0 0 48px var(--accent-glow);
+}
+
+.coreButton:active {
+  transform: scale(0.95);
+}
+
+.coreButtonTitle {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.coreButtonValue {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.link {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.link strong {
+  color: var(--essence);
+}
+
+.generators {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  margin: 0 0 4px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.generator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.hidden {
+  opacity: 0.5;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.genInfo {
+  min-width: 0;
+}
+
+.genName {
+  font-weight: 600;
+}
+
+.owned {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  margin-left: 4px;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.genButtons {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.genButtons button {
+  min-width: 72px;
+  padding: 8px 10px;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,60 @@
+.app {
+  min-height: 100vh;
+  padding-bottom: 96px;
+}
+
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.modeHeader {
+  margin-bottom: 20px;
+}
+
+.modeTitle {
+  margin: 0;
+  font-size: 24px;
+}
+
+.modeIcon {
+  color: var(--accent);
+}
+
+.modeTagline {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}
+
+.welcomeBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(4, 6, 14, 0.72);
+}
+
+.welcome {
+  max-width: 420px;
+  padding: 24px;
+  text-align: center;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+}
+
+.welcome h2 {
+  margin-top: 0;
+}
+
+.welcome p {
+  color: var(--text-muted);
+}
+
+.essence {
+  color: var(--essence);
+}
