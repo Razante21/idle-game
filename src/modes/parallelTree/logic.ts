@@ -10,87 +10,60 @@ export interface AscensionNode {
   flags?: Flag[];
 }
 
+const TIER_COST: Record<number, number> = { 1: 10, 2: 60, 3: 300, 4: 1_500, 5: 5_000, 6: 15_000, 7: 40_000, 8: 80_000 };
+
+function node(tier: number, id: string, name: string, description: string, effect: Pick<AscensionNode, 'bonuses' | 'flags'>): AscensionNode {
+  return { id, name, description, cost: TIER_COST[tier]!, tier, ...effect };
+}
+
 export const ASCENSION_TREE: AscensionNode[] = [
-  {
-    id: 'fluxoAstral',
-    name: 'Fluxo Astral',
-    description: 'Essência de todos os modos x1.5',
-    cost: 10,
-    tier: 1,
+  node(1, 'fluxoAstral', 'Fluxo Astral', 'Essência de todos os modos x1.5', {
     bonuses: [{ target: 'global', stat: 'essence', value: 1.5 }],
-  },
-  {
-    id: 'forjaAstral',
-    name: 'Forja Astral',
-    description: 'Produção de todos os modos x1.5',
-    cost: 10,
-    tier: 1,
+  }),
+  node(1, 'forjaAstral', 'Forja Astral', 'Produção de todos os modos x1.5', {
     bonuses: [{ target: 'global', stat: 'production', value: 1.5 }],
-  },
-  {
-    id: 'maosInvisiveis',
-    name: 'Mãos Invisíveis',
-    description: 'O Núcleo clica sozinho 5 vezes por segundo',
-    cost: 60,
-    tier: 2,
-    flags: ['nucleo.autoclick'],
-  },
-  {
-    id: 'ritmoAureo',
-    name: 'Ritmo Áureo',
-    description: 'Geradores do Núcleo dobram a cada 20 em vez de 25',
-    cost: 60,
-    tier: 2,
-    flags: ['nucleo.milestone20'],
-  },
-  {
-    id: 'alquimia',
-    name: 'Alquimia',
-    description: 'A Fábrica gasta 25% menos insumo',
-    cost: 300,
-    tier: 3,
-    flags: ['fabrica.eficiencia'],
-  },
-  {
-    id: 'ceuAberto',
-    name: 'Céu Aberto',
-    description: 'Na Constelação, diagonais contam como vizinhas',
-    cost: 300,
-    tier: 3,
-    flags: ['constelacao.diagonal'],
-  },
-  {
-    id: 'fenix',
-    name: 'Fênix',
-    description: 'Uma vez por expedição, renasce com metade dos PV',
-    cost: 1500,
-    tier: 4,
-    flags: ['expedicao.segundaChance'],
-  },
-  {
-    id: 'andarilho',
-    name: 'Andarilho',
-    description: 'Exploração automática sem precisar do Batedor',
-    cost: 1500,
-    tier: 4,
-    flags: ['expedicao.autoGratis'],
-  },
-  {
-    id: 'transcendencia',
-    name: 'Transcendência',
-    description: 'Essência x3 e produção x2 em todos os modos',
-    cost: 8000,
-    tier: 5,
+  }),
+  node(1, 'mareEterea', 'Maré Etérea', 'Éter x1.5', { bonuses: [{ target: 'parallelTree', stat: 'production', value: 1.5 }] }),
+
+  node(2, 'maosInvisiveis', 'Mãos Invisíveis', 'O Núcleo clica sozinho 5 vezes por segundo', { flags: ['nucleo.autoclick'] }),
+  node(2, 'ritmoAureo', 'Ritmo Áureo', 'Geradores do Núcleo dobram a cada 20 em vez de 25', { flags: ['nucleo.milestone20'] }),
+  node(2, 'tempestade', 'Tempestade', 'Surtos do Núcleo aparecem com o dobro da frequência', { flags: ['nucleo.surtoFrequente'] }),
+
+  node(3, 'alquimia', 'Alquimia', 'A Fábrica gasta 25% menos insumo', { flags: ['fabrica.eficiencia'] }),
+  node(3, 'ceuAberto', 'Céu Aberto', 'Na Constelação, diagonais contam como vizinhas', { flags: ['constelacao.diagonal'] }),
+  node(3, 'fusaoEstelar', 'Fusão Estelar', 'Fundir estrelas custa 2 em vez de 3', { flags: ['constelacao.fusaoBarata'] }),
+
+  node(4, 'fenix', 'Fênix', 'Uma vez por expedição, renasce com metade dos PV', { flags: ['expedicao.segundaChance'] }),
+  node(4, 'andarilho', 'Andarilho', 'Exploração automática sem precisar do Batedor', { flags: ['expedicao.autoGratis'] }),
+  node(4, 'mercador', 'Mercador', 'Lojas da Expedição pela metade do preço', { flags: ['expedicao.lojaDesconto'] }),
+
+  node(5, 'armazemDimensional', 'Armazém Dimensional', 'Armazéns da Fábrica x10', { flags: ['fabrica.armazemInfinito'] }),
+  node(5, 'diplomacia', 'Diplomacia', 'Contratos da Fábrica dão o dobro de reputação', { flags: ['fabrica.contratosDobrados'] }),
+
+  node(6, 'pactoSombrio', 'Pacto Sombrio', 'Cada maldição da Expedição rende +50% em vez de +30%', {
+    flags: ['expedicao.maldicaoLeve'],
+  }),
+  node(6, 'olhoCosmico', 'Olho Cósmico', 'Poeira da Constelação x3', { bonuses: [{ target: 'grid', stat: 'production', value: 3 }] }),
+
+  node(7, 'convergenciaTotal', 'Convergência Total', 'Essência de todos os modos x2', {
+    bonuses: [{ target: 'global', stat: 'essence', value: 2 }],
+  }),
+  node(7, 'motorPerpetuo', 'Motor Perpétuo', 'Produção de todos os modos x2.5', {
+    bonuses: [{ target: 'global', stat: 'production', value: 2.5 }],
+  }),
+
+  node(8, 'transcendencia', 'Transcendência', 'Essência x3 e produção x2 em todos os modos', {
     bonuses: [
       { target: 'global', stat: 'essence', value: 3 },
       { target: 'global', stat: 'production', value: 2 },
     ],
-  },
+  }),
 ];
 
 export const TIERS = [...new Set(ASCENSION_TREE.map((n) => n.tier))].sort((a, b) => a - b);
 const NODES = new Map(ASCENSION_TREE.map((n) => [n.id, n]));
 const ETHER_PER_ROOT = 0.2;
+export const RESPEC_REFUND = 0.9;
 
 export interface ParallelTreeState {
   ether: number;
@@ -119,26 +92,30 @@ export function tick(state: ParallelTreeState, dt: number, ctx: ModeContext): Pa
 
 export type AscensionStatus = 'purchased' | 'available' | 'unaffordable' | 'excluded' | 'locked';
 
-export function nodeStatus(state: ParallelTreeState, node: AscensionNode): AscensionStatus {
-  if (state.nodes.includes(node.id)) return 'purchased';
-  const owned = state.nodes.map((id) => NODES.get(id)).filter((n): n is AscensionNode => !!n);
+export function nodeStatus(state: ParallelTreeState, n: AscensionNode): AscensionStatus {
+  if (state.nodes.includes(n.id)) return 'purchased';
+  const owned = ownedNodes(state);
   const tierMax = Math.max(...TIERS);
-  if (node.tier < tierMax && owned.some((n) => n.tier === node.tier)) return 'excluded';
-  const prerequisiteTiers = node.tier === tierMax ? TIERS.filter((t) => t < tierMax) : [node.tier - 1].filter((t) => t >= 1);
-  if (!prerequisiteTiers.every((t) => owned.some((n) => n.tier === t))) return 'locked';
-  return state.ether >= node.cost ? 'available' : 'unaffordable';
+  if (n.tier < tierMax && owned.some((o) => o.tier === n.tier)) return 'excluded';
+  const prerequisiteTiers = n.tier === tierMax ? TIERS.filter((t) => t < tierMax) : [n.tier - 1].filter((t) => t >= 1);
+  if (!prerequisiteTiers.every((t) => owned.some((o) => o.tier === t))) return 'locked';
+  return state.ether >= n.cost ? 'available' : 'unaffordable';
 }
 
 export function buyNode(state: ParallelTreeState, id: string): ParallelTreeState {
-  const node = NODES.get(id);
-  if (!node || nodeStatus(state, node) !== 'available') return state;
-  return { ...state, ether: state.ether - node.cost, nodes: [...state.nodes, id] };
+  const n = NODES.get(id);
+  if (!n || nodeStatus(state, n) !== 'available') return state;
+  return { ...state, ether: state.ether - n.cost, nodes: [...state.nodes, id] };
 }
 
-/** Desfaz todas as escolhas e devolve todo o Éter gasto. */
+export function spentEther(state: ParallelTreeState): number {
+  return state.nodes.reduce((sum, id) => sum + (NODES.get(id)?.cost ?? 0), 0);
+}
+
+/** Desfaz todas as escolhas e devolve 90% do Éter gasto. */
 export function respec(state: ParallelTreeState): ParallelTreeState {
-  const refund = state.nodes.reduce((sum, id) => sum + (NODES.get(id)?.cost ?? 0), 0);
-  return { ...state, ether: state.ether + refund, nodes: [] };
+  if (state.nodes.length === 0) return state;
+  return { ...state, ether: state.ether + spentEther(state) * RESPEC_REFUND, nodes: [] };
 }
 
 function ownedNodes(state: ParallelTreeState): AscensionNode[] {
@@ -157,17 +134,19 @@ export function essenceRate(state: ParallelTreeState): number {
   return 0.1 * Math.sqrt(state.totalEther);
 }
 
+/** Custos de versões anteriores da árvore, para reembolsar exatamente o que o jogador pagou. */
+const LEGACY_COST: Record<string, number> = { transcendencia: 8_000 };
+
 export function restore(saved: unknown): ParallelTreeState {
   const s = (saved ?? {}) as Partial<ParallelTreeState>;
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 0);
   const restored: ParallelTreeState = { ether: num(s.ether), totalEther: num(s.totalEther), nodes: [] };
-  const savedNodes = Array.isArray(s.nodes) ? s.nodes : [];
-  // Recompra na ordem salva, ignorando qualquer escolha que não seria válida.
-  for (const id of savedNodes) {
-    const node = typeof id === 'string' ? NODES.get(id) : undefined;
-    if (!node) continue;
-    const status = nodeStatus({ ...restored, ether: Infinity }, node);
-    if (status === 'available') restored.nodes.push(id as string);
+  // Recompra na ordem salva; escolhas que deixaram de ser válidas (a árvore mudou) são reembolsadas.
+  for (const id of Array.isArray(s.nodes) ? s.nodes : []) {
+    const n = typeof id === 'string' ? NODES.get(id) : undefined;
+    if (!n) continue;
+    if (nodeStatus({ ...restored, ether: Infinity }, n) === 'available') restored.nodes.push(n.id);
+    else restored.ether += LEGACY_COST[n.id] ?? n.cost;
   }
   return restored;
 }

@@ -1,3 +1,4 @@
+import { ACHIEVEMENTS } from '../core/achievements';
 import { formatNumber } from '../core/format';
 import { MODES } from '../core/modeRegistry';
 import { countAvailableNodes } from '../core/skillTree/logic';
@@ -6,11 +7,12 @@ import styles from './ResourceHUD.module.css';
 
 interface Props {
   onOpenTree(): void;
+  onOpenAchievements(): void;
   onSave(): void;
   onReset(): void;
 }
 
-export function ResourceHUD({ onOpenTree, onSave, onReset }: Props) {
+export function ResourceHUD({ onOpenTree, onOpenAchievements, onSave, onReset }: Props) {
   const meta = useGameStore((s) => s.meta);
   const rates = useGameStore((s) => s.essenceRates);
   const unlocked = MODES.filter((m) => m.isUnlocked(meta));
@@ -40,6 +42,9 @@ export function ResourceHUD({ onOpenTree, onSave, onReset }: Props) {
         <button className={styles.treeButton} onClick={onOpenTree}>
           Árvore
           {available > 0 && <span className={styles.badge}>{available}</span>}
+        </button>
+        <button onClick={onOpenAchievements} title="Conquistas">
+          ★ {meta.achievements.length}/{ACHIEVEMENTS.length}
         </button>
         <button className={styles.small} onClick={onSave}>
           Salvar

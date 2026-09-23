@@ -1,0 +1,105 @@
+import type { SimState } from './engine/simulate';
+import { SKILL_TREE } from './skillTree/treeData';
+import type { ModeId } from './types';
+import type { BaseClickerState } from '../modes/baseClicker/logic';
+import { GENERATORS, UPGRADES } from '../modes/baseClicker/upgrades';
+import type { GridState } from '../modes/grid/logic';
+import { MAX_LEVEL, MAX_SIZE, PATTERN_IDS } from '../modes/grid/logic';
+import type { ParallelTreeState } from '../modes/parallelTree/logic';
+import type { ProductionChainState } from '../modes/productionChain/logic';
+import { TECH_IDS } from '../modes/productionChain/logic';
+import type { RoguelikeState } from '../modes/roguelike/logic';
+import { CLASS_IDS, RELIC_IDS } from '../modes/roguelike/logic';
+
+export type AchievementCategory = 'Núcleo' | 'Fábrica' | 'Constelação' | 'Expedição' | 'Ascensão' | 'Rede';
+
+export interface Achievement {
+  id: string;
+  category: AchievementCategory;
+  name: string;
+  description: string;
+  check(s: SimState): boolean;
+}
+
+export const ACHIEVEMENT_BONUS = 0.02;
+
+const nucleo = (s: SimState) => s.modes.baseClicker as BaseClickerState;
+const fabrica = (s: SimState) => s.modes.productionChain as ProductionChainState;
+const grid = (s: SimState) => s.modes.grid as GridState;
+const expedicao = (s: SimState) => s.modes.roguelike as RoguelikeState;
+const ascensao = (s: SimState) => s.modes.parallelTree as ParallelTreeState;
+const unlocked = (s: SimState, id: string) => s.meta.purchasedNodes.includes(id);
+
+function a(category: AchievementCategory, id: string, name: string, description: string, check: (s: SimState) => boolean): Achievement {
+  return { id, category, name, description, check };
+}
+
+export const ACHIEVEMENTS: Achievement[] = [
+  a('Núcleo', 'n_click100', 'Primeiro Contato', 'Clicar 100 vezes', (s) => nucleo(s).clicks >= 100),
+  a('Núcleo', 'n_click5k', 'Dedos Calejados', 'Clicar 5.000 vezes', (s) => nucleo(s).clicks >= 5_000),
+  a('Núcleo', 'n_e1m', 'Megawatt', 'Gerar 1M de energia', (s) => nucleo(s).totalEnergy >= 1e6),
+  a('Núcleo', 'n_e1b', 'Gigawatt', 'Gerar 1B de energia', (s) => nucleo(s).totalEnergy >= 1e9),
+  a('Núcleo', 'n_e1t', 'Terawatt', 'Gerar 1T de energia', (s) => nucleo(s).totalEnergy >= 1e12),
+  a('Núcleo', 'n_e1qa', 'Petawatt', 'Gerar 1Qa de energia', (s) => nucleo(s).totalEnergy >= 1e15),
+  a('Núcleo', 'n_fais100', 'Centena de Faíscas', 'Ter 100 Faíscas', (s) => (nucleo(s).owned[0] ?? 0) >= 100),
+  a('Núcleo', 'n_allgen', 'Coleção Completa', 'Ter pelo menos 1 de cada gerador', (s) =>
+    GENERATORS.every((_, i) => (nucleo(s).owned[i] ?? 0) > 0),
+  ),
+  a('Núcleo', 'n_upg25', 'Engenheiro', 'Comprar 25 melhorias', (s) => nucleo(s).upgrades.length >= 25),
+  a('Núcleo', 'n_upgAll', 'Perfeccionista', 'Comprar todas as melhorias', (s) => nucleo(s).upgrades.length >= UPGRADES.length),
+  a('Núcleo', 'n_surge1', 'Pegou!', 'Capturar um Surto', (s) => nucleo(s).surge.caught >= 1),
+  a('Núcleo', 'n_surge50', 'Caçador de Tempestades', 'Capturar 50 Surtos', (s) => nucleo(s).surge.caught >= 50),
+  a('Núcleo', 'n_sobre1', 'Alta Voltagem', 'Fazer uma Sobrecarga', (s) => nucleo(s).sobrecargas >= 1),
+  a('Núcleo', 'n_carga25', 'Carga Máxima', 'Acumular 25 de Carga', (s) => nucleo(s).carga >= 25),
+
+  a('Fábrica', 'f_maq1', 'Primeira Máquina', 'Construir uma Máquina', (s) => fabrica(s).resources.maquina >= 1),
+  a('Fábrica', 'f_maq100', 'Linha de Produção', 'Ter 100 Máquinas', (s) => fabrica(s).resources.maquina >= 100),
+  a('Fábrica', 'f_robo1', 'Consciência Artificial', 'Construir um Robô', (s) => fabrica(s).resources.robo >= 1),
+  a('Fábrica', 'f_robo50', 'Exército de Aço', 'Ter 50 Robôs', (s) => fabrica(s).resources.robo >= 50),
+  a('Fábrica', 'f_work20', 'Sindicato', 'Ter 20 operários', (s) => fabrica(s).workers >= 20),
+  a('Fábrica', 'f_contract10', 'Fornecedor Confiável', 'Cumprir 10 contratos', (s) => fabrica(s).contractsDone >= 10),
+  a('Fábrica', 'f_techAll', 'Revolução Industrial', 'Concluir todas as pesquisas', (s) => fabrica(s).techs.length >= TECH_IDS.length),
+
+  a('Constelação', 'c_full', 'Céu Estrelado', 'Preencher todo o grid', (s) => grid(s).cells.every(Boolean)),
+  a('Constelação', 'c_7x7', 'Firmamento', `Expandir o grid até ${MAX_SIZE}x${MAX_SIZE}`, (s) => grid(s).size >= MAX_SIZE),
+  a('Constelação', 'c_pat4', 'Astrônomo', 'Descobrir 4 padrões', (s) => grid(s).patterns.length >= 4),
+  a('Constelação', 'c_patAll', 'Cartógrafo Celeste', 'Descobrir todos os padrões', (s) => grid(s).patterns.length >= PATTERN_IDS.length),
+  a('Constelação', 'c_lvl5', 'Estrela Suprema', `Criar uma peça de nível ${MAX_LEVEL}`, (s) =>
+    grid(s).cells.some((p) => p?.level === MAX_LEVEL) ||
+    Object.values(grid(s).inventory).some((levels) => (levels[MAX_LEVEL - 1] ?? 0) > 0),
+  ),
+  a('Constelação', 'c_bh', 'Singularidade Local', 'Colocar um Buraco Negro', (s) => grid(s).cells.some((p) => p?.type === 'buracoNegro')),
+
+  a('Expedição', 'e_d10', 'Explorador', 'Chegar ao andar 10', (s) => expedicao(s).bestDepth >= 10),
+  a('Expedição', 'e_d25', 'Desbravador', 'Chegar ao andar 25', (s) => expedicao(s).bestDepth >= 25),
+  a('Expedição', 'e_d50', 'Lenda Viva', 'Chegar ao andar 50', (s) => expedicao(s).bestDepth >= 50),
+  a('Expedição', 'e_rel7', 'Colecionador', 'Encontrar 7 relíquias', (s) => expedicao(s).relics.length >= 7),
+  a('Expedição', 'e_relAll', 'Tesouro Completo', 'Encontrar todas as relíquias', (s) => expedicao(s).relics.length >= RELIC_IDS.length),
+  a('Expedição', 'e_classes', 'Versátil', 'Liberar todas as classes', (s) => expedicao(s).classes.length >= CLASS_IDS.length),
+  a('Expedição', 'e_boss10', 'Matador de Chefes', 'Derrotar 10 chefes', (s) => expedicao(s).bossesDefeated >= 10),
+  a('Expedição', 'e_runs100', 'Veterano', 'Completar 100 expedições', (s) => expedicao(s).runs >= 100),
+
+  a('Ascensão', 'a_first', 'Primeiro Passo', 'Escolher um caminho na Ascensão', (s) => ascensao(s).nodes.length >= 1),
+  a('Ascensão', 'a_cap', 'Transcendente', 'Alcançar a Transcendência', (s) => ascensao(s).nodes.includes('transcendencia')),
+  a('Ascensão', 'a_ether', 'Mar de Éter', 'Acumular 100K de Éter', (s) => ascensao(s).totalEther >= 1e5),
+
+  a('Rede', 'm_ess1k', 'Faísca de Essência', 'Acumular 1K de Essência', (s) => s.meta.totalEssence >= 1e3),
+  a('Rede', 'm_ess1m', 'Rio de Essência', 'Acumular 1M de Essência', (s) => s.meta.totalEssence >= 1e6),
+  a('Rede', 'm_ess1b', 'Oceano de Essência', 'Acumular 1B de Essência', (s) => s.meta.totalEssence >= 1e9),
+  a('Rede', 'm_allModes', 'Rede Completa', 'Desbloquear todos os modos', (s) =>
+    (['productionChain', 'grid', 'roguelike', 'parallelTree'] as ModeId[]).every((m) => unlocked(s, `unlock_${m}`)),
+  ),
+  a('Rede', 'm_tree', 'Arquiteto', 'Comprar todos os nós da Árvore', (s) => SKILL_TREE.every((n) => unlocked(s, n.id))),
+];
+
+export const ACHIEVEMENT_IDS: ReadonlySet<string> = new Set(ACHIEVEMENTS.map((x) => x.id));
+
+/** Ids das conquistas recém-cumpridas (ainda não registradas no meta). */
+export function newlyEarned(state: SimState): string[] {
+  const done = new Set(state.meta.achievements);
+  return ACHIEVEMENTS.filter((x) => !done.has(x.id) && x.check(state)).map((x) => x.id);
+}
+
+export function achievementMultiplier(count: number): number {
+  return 1 + ACHIEVEMENT_BONUS * count;
+}

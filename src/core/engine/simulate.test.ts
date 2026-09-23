@@ -10,9 +10,10 @@ import { simulate, type SimState } from './simulate';
 
 function stateWith(owned: number[], meta: Partial<MetaState> = {}): SimState {
   const modes = initialModeStates();
-  modes.baseClicker = { ...(modes.baseClicker as BaseClickerState), owned };
+  const padded = Array.from({ length: 12 }, (_, i) => owned[i] ?? 0);
+  modes.baseClicker = { ...(modes.baseClicker as BaseClickerState), owned: padded };
   return {
-    meta: { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', ...meta },
+    meta: { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], ...meta },
     modes,
   };
 }
@@ -22,9 +23,9 @@ describe('simulate', () => {
     const result = simulate(stateWith([20, 0, 0, 0, 0, 0]), 10);
     const base = result.modes.baseClicker as BaseClickerState;
     expect(base.energy).toBeCloseTo(100);
-    expect(result.essenceGained).toBeCloseTo((Math.sqrt(10) / 10) * 10);
+    expect(result.essenceGained).toBeCloseTo((Math.sqrt(10) / 15) * 10);
     expect(result.meta.essence).toBeCloseTo(result.essenceGained);
-    expect(result.essenceRates.baseClicker).toBeCloseTo(Math.sqrt(10) / 10);
+    expect(result.essenceRates.baseClicker).toBeCloseTo(Math.sqrt(10) / 15);
   });
 
   it('applies the global essence multiplier', () => {
@@ -48,7 +49,7 @@ describe('simulate', () => {
         ...base.modes,
         productionChain: {
           ...(base.modes.productionChain as ProductionChainState),
-          resources: { minerio: 0, lingote: 0, engrenagem: 0, maquina: 16 },
+          resources: { ...(base.modes.productionChain as ProductionChainState).resources, maquina: 16 },
         },
       },
     };
@@ -90,7 +91,7 @@ describe('persistence', () => {
     const loaded = deserialize({
       schemaVersion: 1,
       savedAt: 1,
-      meta: { essence: 'x', purchasedNodes: ['nope', 'despertar'], activeModeId: 'grid' },
+      meta: { essence: 'x', purchasedNodes: ['nope', 'despertar'], activeModeId: 'grid', achievements: ['n_click100', 'fake'] },
       modes: {},
     });
     expect(loaded?.state.meta).toEqual({
@@ -98,6 +99,7 @@ describe('persistence', () => {
       totalEssence: 0,
       purchasedNodes: ['despertar'],
       activeModeId: 'baseClicker',
+      achievements: ['n_click100'],
     });
   });
 });

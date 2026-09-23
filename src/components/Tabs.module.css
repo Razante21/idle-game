@@ -1,0 +1,40 @@
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.tab,
+.active {
+  flex: 1 0 auto;
+  position: relative;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.tab {
+  color: var(--text-muted);
+}
+
+.active {
+  background: var(--surface-2);
+  border-color: var(--accent);
+}
+
+.badge {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--essence);
+  color: var(--bg);
+  font-size: 11px;
+  font-weight: 700;
+}

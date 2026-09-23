@@ -12,6 +12,7 @@
 }
 
 .core {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -85,18 +86,88 @@
   color: var(--essence);
 }
 
-.generators {
+.side {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
-.sectionTitle {
-  margin: 0 0 4px;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
+.orb {
+  position: absolute;
+  z-index: 2;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #ffd76a;
+  background: radial-gradient(circle, #fff3b0, #ffb347 70%);
+  color: #5a3a00;
+  font-size: 24px;
+  box-shadow: 0 0 28px rgba(255, 200, 90, 0.8);
+  animation: pulse 900ms ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  to {
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none;
+  }
+}
+
+.surgeBanner {
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(255, 200, 90, 0.18);
+  color: #ffd76a;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.upgrades {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.upgrade {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px;
+  text-align: left;
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.upgrade:disabled {
+  opacity: 0.6;
+}
+
+.affordable {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.lockedUpgrade {
+  border: 1px dashed var(--border-strong);
+  opacity: 0.5;
+}
+
+.cost {
+  margin-top: 4px;
+  color: var(--accent);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 .generator {

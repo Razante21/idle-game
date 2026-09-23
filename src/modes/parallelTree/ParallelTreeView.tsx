@@ -5,12 +5,14 @@ import s from '../shared.module.css';
 import a from './ParallelTreeView.module.css';
 import {
   ASCENSION_TREE,
+  RESPEC_REFUND,
   TIERS,
   buyNode,
   etherPerSecond,
   etherSources,
   nodeStatus,
   respec,
+  spentEther,
   type ParallelTreeState,
 } from './logic';
 
@@ -60,7 +62,10 @@ export function ParallelTreeView({ state, ctx, essenceRate, update }: ModeViewPr
 
         <section className={s.panel}>
           <h2 className={s.sectionTitle}>Reconfigurar</h2>
-          <p className={s.muted}>Desfaz todas as escolhas e devolve todo o Éter gasto.</p>
+          <p className={s.muted}>
+            Desfaz todas as escolhas e devolve {Math.round(RESPEC_REFUND * 100)}% do Éter gasto (
+            {formatNumber(spentEther(state) * RESPEC_REFUND)}).
+          </p>
           <button disabled={state.nodes.length === 0} onClick={() => update(respec)}>
             Reconfigurar caminhos
           </button>
@@ -68,7 +73,9 @@ export function ParallelTreeView({ state, ctx, essenceRate, update }: ModeViewPr
       </div>
 
       <div className={s.stack}>
-        <h2 className={s.sectionTitle}>Caminhos — escolha um por nível</h2>
+        <h2 className={s.sectionTitle}>
+          Caminhos — escolha um por nível ({state.nodes.length}/{TIERS.length})
+        </h2>
         {TIERS.map((tier) => {
           const nodes = ASCENSION_TREE.filter((n) => n.tier === tier);
           return (
