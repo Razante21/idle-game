@@ -407,9 +407,13 @@ export function expandCost(state: GridState): number | null {
   return EXPAND_COSTS[state.size] ?? null;
 }
 
-export function expand(state: GridState): GridState {
+export function canExpand(ctx?: ModeContext): boolean {
+  return !ctx?.hasFlag('anomalia.ceuPequeno');
+}
+
+export function expand(state: GridState, ctx?: ModeContext): GridState {
   const cost = expandCost(state);
-  if (cost === null || state.dust < cost) return state;
+  if (cost === null || state.dust < cost || !canExpand(ctx)) return state;
   const size = state.size + 1;
   const cells: (Piece | null)[] = Array.from({ length: size * size }, () => null);
   state.cells.forEach((p, i) => {
@@ -438,6 +442,11 @@ export function essenceRate(state: GridState, ctx: ModeContext): number {
   const { dust, absorbed } = gridTotals(state, ctx.hasFlag('constelacao.diagonal'));
   const mult = ctx.multiplier('production');
   return logSquared(dust * mult, 2) + logSquared(absorbed * mult, 1.5);
+}
+
+/** Colapso: o céu recomeça; a Memória Estelar guarda os padrões descobertos. */
+export function onCollapse(state: GridState, keeps: ReadonlySet<string>): GridState {
+  return { ...initialGridState, patterns: keeps.has('padroes') ? state.patterns : [], seed: state.seed };
 }
 
 export function restore(saved: unknown): GridState {

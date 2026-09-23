@@ -37,3 +37,20 @@ export function getNodeStatus(node: SkillNode, meta: MetaState, rates: EssenceRa
 export function countAvailableNodes(meta: MetaState, rates: EssenceRates): number {
   return SKILL_TREE.filter((n) => getNodeStatus(n, meta, rates) === 'available').length;
 }
+
+/** Compra um nó se estiver disponível; devolve o meta atualizado ou null. */
+export function purchaseNode(meta: MetaState, id: string, rates: EssenceRates): MetaState | null {
+  const node = NODES_BY_ID.get(id);
+  if (!node || getNodeStatus(node, meta, rates) !== 'available') return null;
+  return { ...meta, essence: meta.essence - node.cost, purchasedNodes: [...meta.purchasedNodes, id] };
+}
+
+/** Compra repetidamente o nó disponível mais barato (usado pelo Arquiteto Automático). */
+export function autoBuyNodes(meta: MetaState, rates: EssenceRates): MetaState {
+  let next = meta;
+  for (;;) {
+    const node = SKILL_TREE.filter((n) => getNodeStatus(n, next, rates) === 'available').sort((a, b) => a.cost - b.cost)[0];
+    if (!node) return next;
+    next = purchaseNode(next, node.id, rates) ?? next;
+  }
+}

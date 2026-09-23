@@ -135,6 +135,11 @@ export function essenceRate(state: ParallelTreeState): number {
   return logSquared(state.totalEther, 2);
 }
 
+/** Colapso: o Éter recomeça do zero; o Eco Ascendente guarda os caminhos escolhidos. */
+export function onCollapse(state: ParallelTreeState, keeps: ReadonlySet<string>): ParallelTreeState {
+  return { ...initialParallelTreeState, nodes: keeps.has('ascensao') ? state.nodes : [] };
+}
+
 /** Custos de versões anteriores da árvore, para reembolsar exatamente o que o jogador pagou. */
 const LEGACY_COST: Record<string, number> = { transcendencia: 8_000 };
 

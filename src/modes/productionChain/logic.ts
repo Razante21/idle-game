@@ -260,6 +260,7 @@ export function storageCap(state: ProductionChainState, resource: Resource, ctx:
   let cap = STORAGE_BASE * 2 ** state.storageLevel;
   if (hasTech(state, 'armazemInteligente')) cap *= 4;
   if (ctx.hasFlag('fabrica.armazemInfinito')) cap *= 10;
+  if (ctx.hasFlag('anomalia.escassez')) cap /= 4;
   return cap;
 }
 
@@ -343,7 +344,8 @@ export function tick(state: ProductionChainState, dt: number, ctx: ModeContext):
     resources[s.output] = Math.min(resources[s.output] + out, storageCap(state, s.output, ctx));
     return dt > 0 ? out / dt : 0;
   });
-  return tickContract({ ...state, resources, flow }, dt, ctx);
+  const next = tickContract({ ...state, resources, flow }, dt, ctx);
+  return ctx.hasFlag('fabrica.autoContratos') ? deliverContract(next) : next;
 }
 
 export function assign(state: ProductionChainState, i: number, delta: number): ProductionChainState {
@@ -426,6 +428,16 @@ export function provides(state: ProductionChainState): ModeBonus[] {
     });
   }
   return bonuses;
+}
+
+/** Colapso: a Fábrica recomeça; o Arquivo Industrial guarda as pesquisas. */
+export function onCollapse(state: ProductionChainState, keeps: ReadonlySet<string>): ProductionChainState {
+  return {
+    ...initialProductionChainState,
+    techs: keeps.has('pesquisas') ? state.techs : [],
+    contractsDone: state.contractsDone,
+    seed: state.seed,
+  };
 }
 
 export function restore(saved: unknown): ProductionChainState {

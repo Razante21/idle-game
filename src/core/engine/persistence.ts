@@ -1,4 +1,5 @@
 import { ACHIEVEMENT_IDS } from '../achievements';
+import { restoreCosmos } from '../cosmos/logic';
 import { MODES, isModeId } from '../modeRegistry';
 import { NODES_BY_ID } from '../skillTree/treeData';
 import type { MetaState, ModeStates } from '../types';
@@ -46,6 +47,7 @@ export function deserialize(raw: unknown): { state: SimState; savedAt: number } 
       ? [...new Set(rawMeta.achievements.filter((id): id is string => typeof id === 'string' && ACHIEVEMENT_IDS.has(id)))]
       : [],
     playSeconds: Math.max(0, finiteOr(rawMeta.playSeconds, 0)),
+    cosmos: restoreCosmos(rawMeta.cosmos),
   };
   if (isModeId(rawMeta.activeModeId) && MODES.some((m) => m.id === rawMeta.activeModeId && m.isUnlocked(meta))) {
     meta.activeModeId = rawMeta.activeModeId;

@@ -1,6 +1,6 @@
 import { isModeUnlockedByTree } from '../../core/skillTree/logic';
 import type { GameMode } from '../../core/types';
-import { essenceRate, initialRoguelikeState, provides, restore, tick, type RoguelikeState } from './logic';
+import { essenceRate, initialRoguelikeState, onCollapse, provides, restore, tick, type RoguelikeState } from './logic';
 import { RoguelikeView } from './RoguelikeView';
 
 export const roguelikeMode: GameMode<RoguelikeState> = {
@@ -14,6 +14,7 @@ export const roguelikeMode: GameMode<RoguelikeState> = {
   tick,
   essenceRate,
   provides,
+  onCollapse,
   restore,
   Component: RoguelikeView,
 };

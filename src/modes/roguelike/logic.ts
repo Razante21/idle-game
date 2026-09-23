@@ -124,6 +124,8 @@ export interface Run {
   curses: CurseId[];
   shopOpen: boolean;
   auto: boolean;
+  /** Anomalia Expedição de Ferro: sem descansos nem lojas. */
+  iron: boolean;
 }
 
 export interface RoguelikeState {
@@ -214,10 +216,11 @@ function pushLog(log: string[], entry: string): string[] {
   return [entry, ...log].slice(0, LOG_SIZE);
 }
 
-function rollOptions(run: Pick<Run, 'classId'>, depth: number, rng: Rng): RoomKind[] {
+function rollOptions(run: Pick<Run, 'classId' | 'iron'>, depth: number, rng: Rng): RoomKind[] {
   if (depth % BOSS_EVERY === 0) return ['chefe'];
   const weights = { ...BASE_WEIGHTS, ...biomeAt(depth).weights };
-  if (depth < 2) weights.loja = 0;
+  if (depth < 2 || run.iron) weights.loja = 0;
+  if (run.iron) weights.descanso = 0;
   const pool = (Object.entries(weights) as [RoomKind, number][]).filter(([, w]) => w > 0);
   const count = run.classId === 'ladino' ? 4 : 3;
   const options: RoomKind[] = [];
@@ -249,6 +252,7 @@ export function startRun(state: RoguelikeState, ctx: ModeContext, auto = false):
     curses: [...curses],
     shopOpen: false,
     auto,
+    iron: ctx.hasFlag('anomalia.ferro'),
   };
   run.options = rollOptions(run, 1, rng);
   const cursed = curses.length ? ` com ${curses.length} ${curses.length === 1 ? 'maldição' : 'maldições'}` : '';
@@ -491,6 +495,20 @@ export function provides(state: RoguelikeState): ModeBonus[] {
   ];
 }
 
+/** Colapso: a jornada recomeça, mas relíquias, classes e melhorias permanentes continuam. */
+export function onCollapse(state: RoguelikeState): RoguelikeState {
+  return {
+    ...initialRoguelikeState,
+    upgrades: state.upgrades,
+    relics: state.relics,
+    classes: state.classes,
+    selectedClass: state.selectedClass,
+    bossesDefeated: state.bossesDefeated,
+    runs: state.runs,
+    seed: state.seed,
+  };
+}
+
 export function restore(saved: unknown): RoguelikeState {
   const s = (saved ?? {}) as Partial<RoguelikeState>;
   const num = (v: unknown, fallback = 0) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : fallback);
@@ -514,6 +532,7 @@ export function restore(saved: unknown): RoguelikeState {
           curses: pickList(run.curses, CURSE_IDS),
           shopOpen: run.shopOpen === true,
           auto: run.auto === true,
+          iron: run.iron === true,
         }
       : null;
   const selectedClass = classes.includes(s.selectedClass as ClassId) ? (s.selectedClass as ClassId) : 'guerreiro';

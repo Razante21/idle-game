@@ -69,6 +69,7 @@ export function simulate(
       essence: state.meta.essence + gained,
       totalEssence: state.meta.totalEssence + gained,
       playSeconds: state.meta.playSeconds + Math.max(0, seconds),
+      cosmos: { ...state.meta.cosmos, runEssence: state.meta.cosmos.runEssence + gained },
     },
     modes,
   };

@@ -1,0 +1,71 @@
+.anomalyChoices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cosmology {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 8px;
+  overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+  .cosmology {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.node {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px;
+  text-align: left;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.node:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.cost {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--essence);
+}
+
+.owned {
+  border-color: var(--essence);
+  background: var(--essence-soft);
+}
+
+.available {
+  border-color: var(--essence);
+  box-shadow: 0 0 14px var(--essence-glow);
+}
+
+.node.unaffordable {
+  opacity: 0.75;
+}
+
+.node.locked {
+  opacity: 0.35;
+}
+
+.done {
+  border-color: var(--success);
+}

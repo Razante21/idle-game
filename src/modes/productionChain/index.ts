@@ -3,6 +3,7 @@ import type { GameMode } from '../../core/types';
 import {
   essenceRate,
   initialProductionChainState,
+  onCollapse,
   provides,
   restore,
   tick,
@@ -21,6 +22,7 @@ export const productionChainMode: GameMode<ProductionChainState> = {
   tick,
   essenceRate,
   provides,
+  onCollapse,
   restore,
   Component: ProductionChainView,
 };
