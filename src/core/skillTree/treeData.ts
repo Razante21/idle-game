@@ -1,0 +1,138 @@
+import type { ModeId, Stat } from '../types';
+
+export type NodeEffect =
+  | { type: 'unlockMode'; modeId: ModeId }
+  | { type: 'multiplier'; target: ModeId | 'global'; stat: Stat; value: number };
+
+export type NodeRequirement = {
+  type: 'sustainedContribution';
+  modeId: ModeId;
+  ratePerSecond: number;
+};
+
+export interface SkillNode {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  parents: string[];
+  effects: NodeEffect[];
+  requirements?: NodeRequirement[];
+  /** Coluna (0 = esquerda) e linha (0 = topo) na grade de exibição. */
+  position: { col: number; row: number };
+}
+
+export const SKILL_TREE: SkillNode[] = [
+  {
+    id: 'despertar',
+    name: 'Despertar',
+    description: 'Produção do Núcleo x2',
+    cost: 3,
+    parents: [],
+    effects: [{ type: 'multiplier', target: 'baseClicker', stat: 'production', value: 2 }],
+    position: { col: 2, row: 0 },
+  },
+  {
+    id: 'toque',
+    name: 'Toque Firme',
+    description: 'Valor do clique x3',
+    cost: 10,
+    parents: ['despertar'],
+    effects: [{ type: 'multiplier', target: 'baseClicker', stat: 'click', value: 3 }],
+    position: { col: 0, row: 1 },
+  },
+  {
+    id: 'fluxo',
+    name: 'Fluxo',
+    description: 'Essência de todos os modos x1.5',
+    cost: 25,
+    parents: ['despertar'],
+    effects: [{ type: 'multiplier', target: 'global', stat: 'essence', value: 1.5 }],
+    position: { col: 2, row: 1 },
+  },
+  {
+    id: 'sobrecarga',
+    name: 'Sobrecarga',
+    description: 'Produção do Núcleo x2',
+    cost: 40,
+    parents: ['despertar'],
+    effects: [{ type: 'multiplier', target: 'baseClicker', stat: 'production', value: 2 }],
+    position: { col: 4, row: 1 },
+  },
+  {
+    id: 'ressonancia',
+    name: 'Ressonância',
+    description: 'Valor do clique x5',
+    cost: 120,
+    parents: ['toque'],
+    effects: [{ type: 'multiplier', target: 'baseClicker', stat: 'click', value: 5 }],
+    position: { col: 0, row: 2 },
+  },
+  {
+    id: 'unlock_productionChain',
+    name: 'Portal: Fábrica',
+    description: 'Desbloqueia o modo Fábrica',
+    cost: 60,
+    parents: ['fluxo'],
+    effects: [{ type: 'unlockMode', modeId: 'productionChain' }],
+    position: { col: 2, row: 2 },
+  },
+  {
+    id: 'catalise',
+    name: 'Catálise',
+    description: 'Produção do Núcleo x3',
+    cost: 200,
+    parents: ['sobrecarga'],
+    effects: [{ type: 'multiplier', target: 'baseClicker', stat: 'production', value: 3 }],
+    position: { col: 4, row: 2 },
+  },
+  {
+    id: 'unlock_grid',
+    name: 'Portal: Constelação',
+    description: 'Desbloqueia o modo Constelação',
+    cost: 350,
+    parents: ['unlock_productionChain'],
+    effects: [{ type: 'unlockMode', modeId: 'grid' }],
+    requirements: [{ type: 'sustainedContribution', modeId: 'baseClicker', ratePerSecond: 1.5 }],
+    position: { col: 2, row: 3 },
+  },
+  {
+    id: 'convergencia',
+    name: 'Convergência',
+    description: 'Essência de todos os modos x2',
+    cost: 800,
+    parents: ['catalise'],
+    effects: [{ type: 'multiplier', target: 'global', stat: 'essence', value: 2 }],
+    position: { col: 4, row: 3 },
+  },
+  {
+    id: 'hiperfluxo',
+    name: 'Hiperfluxo',
+    description: 'Produção do Núcleo x5',
+    cost: 2500,
+    parents: ['ressonancia', 'unlock_grid'],
+    effects: [{ type: 'multiplier', target: 'baseClicker', stat: 'production', value: 5 }],
+    position: { col: 0, row: 4 },
+  },
+  {
+    id: 'unlock_roguelike',
+    name: 'Portal: Expedição',
+    description: 'Desbloqueia o modo Expedição',
+    cost: 1500,
+    parents: ['unlock_grid'],
+    effects: [{ type: 'unlockMode', modeId: 'roguelike' }],
+    position: { col: 2, row: 4 },
+  },
+  {
+    id: 'unlock_parallelTree',
+    name: 'Portal: Ascensão',
+    description: 'Desbloqueia o modo Ascensão',
+    cost: 6000,
+    parents: ['unlock_roguelike'],
+    effects: [{ type: 'unlockMode', modeId: 'parallelTree' }],
+    requirements: [{ type: 'sustainedContribution', modeId: 'baseClicker', ratePerSecond: 5 }],
+    position: { col: 2, row: 5 },
+  },
+];
+
+export const NODES_BY_ID: ReadonlyMap<string, SkillNode> = new Map(SKILL_TREE.map((n) => [n.id, n]));

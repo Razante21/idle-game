@@ -1,0 +1,151 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(4, 6, 14, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.panel {
+  width: min(760px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.subtitle strong {
+  color: var(--essence);
+}
+
+.scroller {
+  overflow: auto;
+  padding: 24px;
+}
+
+.canvas {
+  position: relative;
+  margin: 0 auto;
+}
+
+.edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.edge,
+.edgeActive {
+  fill: none;
+  stroke-width: 2;
+}
+
+.edge {
+  stroke: var(--border-strong);
+}
+
+.edgeActive {
+  stroke: var(--essence);
+}
+
+.node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 10px 12px;
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.node:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.nodeName {
+  font-weight: 600;
+}
+
+.nodeDetail {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.nodeCost {
+  font-size: 12px;
+  color: var(--essence);
+  font-variant-numeric: tabular-nums;
+}
+
+.reqMet,
+.reqUnmet {
+  font-size: 11px;
+}
+
+.reqMet {
+  color: var(--success);
+}
+
+.reqUnmet {
+  color: var(--danger);
+}
+
+.portal {
+  border-style: double;
+  border-width: 3px;
+}
+
+.purchased {
+  border-color: var(--essence);
+  background: var(--essence-soft);
+}
+
+.available {
+  border-color: var(--essence);
+  box-shadow: 0 0 16px var(--essence-glow);
+}
+
+.available:hover {
+  background: var(--surface-2);
+}
+
+.node.unaffordable,
+.node.requirementUnmet {
+  opacity: 0.75;
+}
+
+.node.locked {
+  opacity: 0.4;
+}
