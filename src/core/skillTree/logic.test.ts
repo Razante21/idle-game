@@ -5,7 +5,7 @@ import { getMultiplier, getNodeStatus, isModeUnlockedByTree } from './logic';
 import { NODES_BY_ID, SKILL_TREE } from './treeData';
 
 function meta(partial: Partial<MetaState> = {}): MetaState {
-  return { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], ...partial };
+  return { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], playSeconds: 0, ...partial };
 }
 
 function node(id: string) {
@@ -33,15 +33,15 @@ describe('skill tree', () => {
   it('reports node status from parents, cost and sustained requirements', () => {
     const rates = zeroRates();
     expect(getNodeStatus(node('despertar'), meta(), rates)).toBe('unaffordable');
-    expect(getNodeStatus(node('despertar'), meta({ essence: 3 }), rates)).toBe('available');
+    expect(getNodeStatus(node('despertar'), meta({ essence: node('despertar').cost }), rates)).toBe('available');
     expect(getNodeStatus(node('toque'), meta({ essence: 100 }), rates)).toBe('locked');
 
     const beforeGrid = meta({
-      essence: 1000,
+      essence: 1e12,
       purchasedNodes: ['despertar', 'fluxo', 'unlock_productionChain'],
     });
     expect(getNodeStatus(node('unlock_grid'), beforeGrid, rates)).toBe('requirementUnmet');
-    expect(getNodeStatus(node('unlock_grid'), beforeGrid, { ...rates, baseClicker: 2 })).toBe('available');
+    expect(getNodeStatus(node('unlock_grid'), beforeGrid, { ...rates, baseClicker: 5 })).toBe('available');
   });
 
   it('unlocks modes only through portal nodes', () => {

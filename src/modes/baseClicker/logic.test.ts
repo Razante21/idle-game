@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { logSquared } from '../../core/curves';
 import { makeCtx } from '../../test/makeCtx';
 import {
   SURGE_MULT,
@@ -62,7 +63,7 @@ describe('baseClicker generators', () => {
     const doubled = makeCtx({ mult: { production: 2 } });
     expect(productionPerSecond(state, doubled)).toBe(10);
     expect(tick(state, 2, doubled).energy).toBe(20);
-    expect(essenceRate(state, doubled)).toBeCloseTo(Math.sqrt(10) / 15);
+    expect(essenceRate(state, doubled)).toBeCloseTo(logSquared(10, 8));
   });
 
   it('applies Ascensão rules: milestone every 20 and auto-click', () => {
@@ -105,7 +106,7 @@ describe('baseClicker upgrades', () => {
 describe('baseClicker surges and Sobrecarga', () => {
   it('an orb spawns, can be caught and multiplies production', () => {
     let state = withOwned([10]);
-    state = tick(state, 61, noMult);
+    state = tick(state, 181, noMult);
     expect(state.surge.orbLeft).toBeGreaterThan(0);
     state = catchSurge(state, noMult);
     expect(state.surge.caught).toBe(1);
@@ -115,13 +116,16 @@ describe('baseClicker surges and Sobrecarga', () => {
   });
 
   it('an uncaught orb expires and schedules the next one', () => {
-    const state = tick(tick(initialBaseClickerState, 61, noMult), 16, noMult);
+    const state = tick(tick(initialBaseClickerState, 181, noMult), 16, noMult);
     expect(state.surge.orbLeft).toBe(0);
     expect(state.surge.nextIn).toBeGreaterThan(0);
   });
 
   it('Sobrecarga trades the run for Carga', () => {
-    const state = withOwned([50, 20], { runEnergy: 4e7, energy: 123, upgrades: ['gen-0-0'], clicks: 9 });
+    expect(cargaGain(withOwned([], { runEnergy: 5e6 }))).toBe(0);
+    expect(cargaGain(withOwned([], { runEnergy: 1e9 }))).toBe(5);
+    expect(cargaGain(withOwned([], { runEnergy: 1e12 }))).toBe(14);
+    const state = withOwned([50, 20], { runEnergy: 1e8, energy: 123, upgrades: ['gen-0-0'], clicks: 9 });
     expect(cargaGain(state)).toBe(2);
     const reset = sobrecarga(state);
     expect(reset.carga).toBe(2);

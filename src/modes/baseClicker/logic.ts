@@ -1,3 +1,4 @@
+import { logSquared } from '../../core/curves';
 import { createRng, validSeed } from '../../core/rng';
 import type { ModeBonus, ModeContext } from '../../core/types';
 import { GENERATORS, UPGRADES_BY_ID, type GeneratorDef, type UpgradeDef, type UpgradeRequirement } from './upgrades';
@@ -8,13 +9,13 @@ export const MILESTONE_EVERY = 25;
 const MILESTONE_EVERY_ASCENDED = 20;
 const AUTO_CLICKS_PER_SECOND = 5;
 const BASE_CLICK_SHARE = 0.05;
-const ESSENCE_DIVISOR = 15;
+const ESSENCE_DIVISOR = 8;
 
 export const SURGE_MULT = 7;
 const SURGE_DURATION = 30;
 const SURGE_ORB_LIFETIME = 15;
-const SURGE_INTERVAL: [number, number] = [90, 240];
-const FIRST_SURGE_IN = 60;
+const SURGE_INTERVAL: [number, number] = [150, 360];
+const FIRST_SURGE_IN = 180;
 
 const CARGA_PER_LEVEL = 0.1;
 const CARGA_ENERGY_UNIT = 1e7;
@@ -168,7 +169,7 @@ export function clickValue(state: BaseClickerState, ctx: ModeContext): number {
 }
 
 export function essenceRate(state: BaseClickerState, ctx: ModeContext): number {
-  return Math.sqrt(productionPerSecond(state, ctx)) / ESSENCE_DIVISOR;
+  return logSquared(productionPerSecond(state, ctx), ESSENCE_DIVISOR);
 }
 
 function addEnergy(state: BaseClickerState, gained: number): BaseClickerState {
@@ -282,8 +283,10 @@ export function buyUpgrade(state: BaseClickerState, id: string): BaseClickerStat
 
 // ---------- Sobrecarga (prestígio do Núcleo) ----------
 
+/** Cresce com o número de dígitos da energia da run (1 em 10M, 5 em 1B, 14 em 1T…), para a Carga não se retroalimentar. */
 export function cargaGain(state: BaseClickerState): number {
-  return Math.floor(Math.sqrt(state.runEnergy / CARGA_ENERGY_UNIT));
+  const digits = Math.log10(Math.max(1, state.runEnergy)) - Math.log10(CARGA_ENERGY_UNIT) + 1;
+  return digits >= 1 ? Math.floor(digits ** 1.5) : 0;
 }
 
 /** Zera energia, geradores e melhorias; mantém cliques, Surtos e a Carga acumulada. */

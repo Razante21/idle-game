@@ -1,3 +1,4 @@
+import { logSquared } from '../../core/curves';
 import type { Flag, ModeBonus, ModeContext, ModeId } from '../../core/types';
 
 export interface AscensionNode {
@@ -10,7 +11,7 @@ export interface AscensionNode {
   flags?: Flag[];
 }
 
-const TIER_COST: Record<number, number> = { 1: 10, 2: 60, 3: 300, 4: 1_500, 5: 5_000, 6: 15_000, 7: 40_000, 8: 80_000 };
+const TIER_COST: Record<number, number> = { 1: 100, 2: 2_000, 3: 30_000, 4: 300_000, 5: 3_000_000, 6: 30_000_000, 7: 300_000_000, 8: 3_000_000_000 };
 
 function node(tier: number, id: string, name: string, description: string, effect: Pick<AscensionNode, 'bonuses' | 'flags'>): AscensionNode {
   return { id, name, description, cost: TIER_COST[tier]!, tier, ...effect };
@@ -131,7 +132,7 @@ export function flags(state: ParallelTreeState): Flag[] {
 }
 
 export function essenceRate(state: ParallelTreeState): number {
-  return 0.1 * Math.sqrt(state.totalEther);
+  return logSquared(state.totalEther, 2);
 }
 
 /** Custos de versões anteriores da árvore, para reembolsar exatamente o que o jogador pagou. */

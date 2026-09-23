@@ -186,8 +186,8 @@ export function BaseClickerView({ state, ctx, essenceRate, update }: ModeViewPro
               </div>
             </div>
             <p className={s.muted}>
-              A Carga cresce com a raiz da energia gerada desde a última Sobrecarga (1 ponto a cada 10M, 2 a cada
-              40M, …).
+              A Carga cresce com a quantidade de dígitos da energia gerada desde a última Sobrecarga: 1 ponto em
+              10M, 5 em 1B, 14 em 1T, 52 em 1e20…
             </p>
             <button
               className={s.primary}

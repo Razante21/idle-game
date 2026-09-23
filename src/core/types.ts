@@ -25,6 +25,7 @@ export interface MetaState {
   purchasedNodes: string[];
   activeModeId: ModeId;
   achievements: string[];
+  playSeconds: number;
 }
 
 export type EssenceRates = Record<ModeId, number>;

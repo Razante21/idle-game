@@ -25,7 +25,14 @@ npm install
 npm run dev      # servidor de desenvolvimento
 npm test         # testes da lógica
 npm run build    # typecheck + build de produção em dist/
+npm run balance  # robô que joga sozinho e mede o ritmo (BALANCE_HOURS=72 para simular mais tempo)
 ```
+
+### Ritmo de referência
+
+O robô de balanceamento (`src/balance/bot.ts`) joga de forma bem ativa, então um jogador comum vai
+um pouco mais devagar. Metas atuais medidas por ele: portal da Fábrica em ~15 min, Constelação em
+~45 min, Expedição em ~4h, Ascensão em ~10h, e os últimos nós da Árvore em vários dias.
 
 O progresso é salvo no `localStorage` do navegador, com progresso offline de até 24h.
 

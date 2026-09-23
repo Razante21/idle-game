@@ -6,13 +6,13 @@ export interface GeneratorDef {
 }
 
 export const GENERATORS: GeneratorDef[] = [
-  { name: 'Faísca', baseCost: 10, baseRate: 0.5, growth: 1.15 },
-  { name: 'Dínamo', baseCost: 120, baseRate: 4, growth: 1.15 },
-  { name: 'Reator', baseCost: 1_400, baseRate: 30, growth: 1.15 },
-  { name: 'Estrela', baseCost: 16_000, baseRate: 220, growth: 1.15 },
-  { name: 'Pulsar', baseCost: 200_000, baseRate: 1_800, growth: 1.15 },
-  { name: 'Quasar', baseCost: 3_000_000, baseRate: 16_000, growth: 1.15 },
-  { name: 'Magnetar', baseCost: 50_000_000, baseRate: 140_000, growth: 1.17 },
+  { name: 'Faísca', baseCost: 15, baseRate: 0.5, growth: 1.15 },
+  { name: 'Dínamo', baseCost: 250, baseRate: 4, growth: 1.15 },
+  { name: 'Reator', baseCost: 3_000, baseRate: 30, growth: 1.15 },
+  { name: 'Estrela', baseCost: 35_000, baseRate: 220, growth: 1.15 },
+  { name: 'Pulsar', baseCost: 400_000, baseRate: 1_800, growth: 1.15 },
+  { name: 'Quasar', baseCost: 5_000_000, baseRate: 16_000, growth: 1.15 },
+  { name: 'Magnetar', baseCost: 60_000_000, baseRate: 140_000, growth: 1.17 },
   { name: 'Supernova', baseCost: 800_000_000, baseRate: 1_200_000, growth: 1.17 },
   { name: 'Buraco Branco', baseCost: 15e9, baseRate: 11e6, growth: 1.17 },
   { name: 'Galáxia', baseCost: 300e9, baseRate: 100e6, growth: 1.17 },
@@ -43,14 +43,15 @@ export interface UpgradeDef {
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
 const TIER_THRESHOLDS = [1, 10, 25, 50, 100, 150];
-const TIER_COST_MULT = [20, 150, 2_000, 30_000, 500_000, 10_000_000];
+/** A melhoria custa ~15x o preço do gerador no momento em que ela libera. */
+const TIER_COST_FACTOR = 15;
 
 const tierUpgrades: UpgradeDef[] = GENERATORS.flatMap((g, index) =>
   TIER_THRESHOLDS.map((count, k) => ({
     id: `gen-${index}-${k}`,
     name: `${g.name} ${ROMAN[k]}`,
     description: `${g.name}: produção x2`,
-    cost: g.baseCost * TIER_COST_MULT[k]!,
+    cost: Math.ceil(g.baseCost * g.growth ** count * TIER_COST_FACTOR),
     requirement: { kind: 'owned', index, count },
     effect: { type: 'generator', index, mult: 2 },
   })),

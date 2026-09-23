@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AchievementsView } from './components/AchievementsView';
+import { MenuView } from './components/MenuView';
 import { ModeLinks } from './components/ModeLinks';
 import { ModeSelectorBar } from './components/ModeSelectorBar';
 import { ResourceHUD } from './components/ResourceHUD';
 import { ACHIEVEMENTS } from './core/achievements';
 import { bonusesFor, buildContexts, collectBonuses } from './core/engine/contexts';
-import { clearSave, saveGame } from './core/engine/persistence';
+import { saveGame } from './core/engine/persistence';
 import { startTickLoop } from './core/engine/tickLoop';
 import { formatDuration, formatNumber } from './core/format';
 import { getMode } from './core/modeRegistry';
@@ -28,6 +29,7 @@ function persistNow() {
 export function App({ welcome }: { welcome: WelcomeReport | null }) {
   const [treeOpen, setTreeOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [welcomeReport, setWelcomeReport] = useState(welcome);
   const toastId = useGameStore((s) => s.toasts[0]);
   const toast = toastId ? ACHIEVEMENTS.find((x) => x.id === toastId) : undefined;
@@ -69,13 +71,6 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
     [updateMode, activeId],
   );
 
-  const handleReset = () => {
-    if (!window.confirm('Apagar todo o progresso e começar do zero?')) return;
-    clearSave();
-    useGameStore.getState().reset();
-    setTreeOpen(false);
-  };
-
   const ModeView = mode.Component;
 
   return (
@@ -83,8 +78,7 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
       <ResourceHUD
         onOpenTree={() => setTreeOpen(true)}
         onOpenAchievements={() => setAchievementsOpen(true)}
-        onSave={persistNow}
-        onReset={handleReset}
+        onOpenMenu={() => setMenuOpen(true)}
       />
 
       <main className={styles.main}>
@@ -102,6 +96,7 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
 
       {treeOpen && <SkillTreeView onClose={() => setTreeOpen(false)} />}
       {achievementsOpen && <AchievementsView onClose={() => setAchievementsOpen(false)} />}
+      {menuOpen && <MenuView onClose={() => setMenuOpen(false)} />}
 
       {toast && (
         <div className={styles.toast} role="status">

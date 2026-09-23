@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { logSquared } from '../../core/curves';
 import { makeCtx } from '../../test/makeCtx';
 import {
   beaconBonuses,
@@ -60,7 +61,7 @@ describe('grid pieces', () => {
     const totals = gridTotals(state);
     expect(totals.dust).toBe(1);
     expect(totals.absorbed).toBe(1);
-    expect(essenceRate(state, ctx)).toBeCloseTo(0.25 + 0.3);
+    expect(essenceRate(state, ctx)).toBeCloseTo(logSquared(1, 2) + logSquared(1, 1.5));
   });
 
   it('beacons boost their target mode per lit neighbour and level', () => {

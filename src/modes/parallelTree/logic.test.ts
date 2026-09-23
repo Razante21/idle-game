@@ -20,7 +20,7 @@ function node(id: string) {
   return n;
 }
 
-const rich: ParallelTreeState = { ...initialParallelTreeState, ether: 1_000_000 };
+const rich: ParallelTreeState = { ...initialParallelTreeState, ether: 1e12 };
 
 describe('parallelTree logic', () => {
   it('has 8 tiers with up to three paths each', () => {
@@ -64,13 +64,13 @@ describe('parallelTree logic', () => {
     const spent = buyNode(buyNode(rich, 'fluxoAstral'), 'ritmoAureo');
     const reset = respec(spent);
     expect(reset.nodes).toEqual([]);
-    expect(reset.ether).toBeCloseTo(rich.ether - 70 * 0.1);
+    expect(reset.ether).toBeCloseTo(rich.ether - (node('fluxoAstral').cost + node('ritmoAureo').cost) * 0.1);
   });
 
   it('restore keeps valid choices and refunds the rest', () => {
     const restored = restore({ ether: 5, nodes: ['fluxoAstral', 'forjaAstral', 'fenix', 'nope'] });
     expect(restored.nodes).toEqual(['fluxoAstral']);
-    expect(restored.ether).toBe(5 + 10 + 1_500);
+    expect(restored.ether).toBe(5 + node('forjaAstral').cost + node('fenix').cost);
   });
 
   it('restore refunds the old capstone at the price the player paid', () => {
