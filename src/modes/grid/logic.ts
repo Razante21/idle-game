@@ -1,3 +1,4 @@
+import { logSquared } from '../../core/curves';
 import { createRng, validSeed } from '../../core/rng';
 import type { ModeBonus, ModeContext, ModeId } from '../../core/types';
 
@@ -436,7 +437,7 @@ export function beaconBonuses(state: GridState): ModeBonus[] {
 export function essenceRate(state: GridState, ctx: ModeContext): number {
   const { dust, absorbed } = gridTotals(state, ctx.hasFlag('constelacao.diagonal'));
   const mult = ctx.multiplier('production');
-  return 0.25 * Math.sqrt(dust * mult) + 0.3 * Math.sqrt(absorbed * mult);
+  return logSquared(dust * mult, 2) + logSquared(absorbed * mult, 1.5);
 }
 
 export function restore(saved: unknown): GridState {

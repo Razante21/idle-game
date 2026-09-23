@@ -34,14 +34,19 @@ export function computeEssenceRates(state: SimState, previous: EssenceRates = ze
  * Avança todos os modos desbloqueados em paralelo. Os bônus entre modos são recalculados a cada passo;
  * intervalos longos (aba em segundo plano, progresso offline) usam no máximo MAX_STEPS passos.
  */
-export function simulate(state: SimState, seconds: number, previousRates?: EssenceRates): SimResult {
+export function simulate(
+  state: SimState,
+  seconds: number,
+  previousRates?: EssenceRates,
+  maxStepSeconds = MAX_STEP_SECONDS,
+): SimResult {
   const active = unlockedModes(state.meta);
   let modes = { ...state.modes };
   let rates = previousRates ?? computeEssenceRates(state);
   let gained = 0;
 
   if (seconds > 0) {
-    const steps = Math.min(Math.max(1, Math.ceil(seconds / MAX_STEP_SECONDS)), MAX_STEPS);
+    const steps = Math.min(Math.max(1, Math.ceil(seconds / maxStepSeconds)), MAX_STEPS);
     const dt = seconds / steps;
     for (let i = 0; i < steps; i++) {
       const contexts = buildContexts(state.meta, modes, rates);
@@ -63,6 +68,7 @@ export function simulate(state: SimState, seconds: number, previousRates?: Essen
       ...state.meta,
       essence: state.meta.essence + gained,
       totalEssence: state.meta.totalEssence + gained,
+      playSeconds: state.meta.playSeconds + Math.max(0, seconds),
     },
     modes,
   };

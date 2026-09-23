@@ -21,7 +21,7 @@ export interface GameStore extends SimState {
 }
 
 export function initialMeta(): MetaState {
-  return { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [] };
+  return { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], playSeconds: 0 };
 }
 
 function freshState(): SimState & { essenceRates: EssenceRates; toasts: string[] } {

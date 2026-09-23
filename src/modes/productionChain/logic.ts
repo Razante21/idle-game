@@ -1,3 +1,4 @@
+import { logSquared } from '../../core/curves';
 import { createRng, validSeed } from '../../core/rng';
 import type { ModeBonus, ModeContext } from '../../core/types';
 
@@ -407,7 +408,7 @@ export function deliverContract(state: ProductionChainState): ProductionChainSta
 }
 
 export function essenceRate(state: ProductionChainState): number {
-  return 0.3 * Math.sqrt(state.resources.maquina) + Math.sqrt(state.resources.robo);
+  return logSquared(state.resources.maquina, 2) + logSquared(state.resources.robo, 0.5);
 }
 
 export function provides(state: ProductionChainState): ModeBonus[] {

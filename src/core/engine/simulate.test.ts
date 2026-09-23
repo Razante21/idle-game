@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { BaseClickerState } from '../../modes/baseClicker/logic';
 import type { ParallelTreeState } from '../../modes/parallelTree/logic';
 import type { ProductionChainState } from '../../modes/productionChain/logic';
+import { logSquared } from '../curves';
 import { initialModeStates } from '../modeRegistry';
 import type { MetaState } from '../types';
 import { applyOfflineProgress, MAX_OFFLINE_SECONDS } from './offlineProgress';
-import { deserialize, serialize } from './persistence';
+import { deserialize, exportSave, importSave, serialize } from './persistence';
 import { simulate, type SimState } from './simulate';
 
 function stateWith(owned: number[], meta: Partial<MetaState> = {}): SimState {
@@ -13,7 +14,7 @@ function stateWith(owned: number[], meta: Partial<MetaState> = {}): SimState {
   const padded = Array.from({ length: 12 }, (_, i) => owned[i] ?? 0);
   modes.baseClicker = { ...(modes.baseClicker as BaseClickerState), owned: padded };
   return {
-    meta: { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], ...meta },
+    meta: { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], playSeconds: 0, ...meta },
     modes,
   };
 }
@@ -23,9 +24,9 @@ describe('simulate', () => {
     const result = simulate(stateWith([20, 0, 0, 0, 0, 0]), 10);
     const base = result.modes.baseClicker as BaseClickerState;
     expect(base.energy).toBeCloseTo(100);
-    expect(result.essenceGained).toBeCloseTo((Math.sqrt(10) / 15) * 10);
+    expect(result.essenceGained).toBeCloseTo(logSquared(10, 8) * 10);
     expect(result.meta.essence).toBeCloseTo(result.essenceGained);
-    expect(result.essenceRates.baseClicker).toBeCloseTo(Math.sqrt(10) / 15);
+    expect(result.essenceRates.baseClicker).toBeCloseTo(logSquared(10, 8));
   });
 
   it('applies the global essence multiplier', () => {
@@ -68,6 +69,10 @@ describe('simulate', () => {
     expect((result.modes.parallelTree as ParallelTreeState).ether).toBeGreaterThan(0);
   });
 
+  it('counts play time', () => {
+    expect(simulate(stateWith([1]), 12).meta.playSeconds).toBe(12);
+  });
+
   it('caps offline progress', () => {
     const { elapsedSeconds } = applyOfflineProgress(stateWith([1, 0, 0, 0, 0, 0]), 0, 1e12);
     expect(elapsedSeconds).toBe(MAX_OFFLINE_SECONDS);
@@ -75,6 +80,16 @@ describe('simulate', () => {
 });
 
 describe('persistence', () => {
+  it('exports and imports a save as text, keeping huge numbers finite', () => {
+    const state = stateWith([3], { essence: Infinity, totalEssence: 5 });
+    const text = exportSave(state, 99);
+    expect(text.startsWith('NEXUS1:')).toBe(true);
+    const loaded = importSave(text);
+    expect(loaded?.savedAt).toBe(99);
+    expect(loaded?.state.meta.essence).toBe(Number.MAX_VALUE);
+    expect(importSave('lixo')).toBeNull();
+  });
+
   it('round-trips a save', () => {
     const state = stateWith([3, 1, 0, 0, 0, 0], {
       essence: 42,
@@ -100,6 +115,7 @@ describe('persistence', () => {
       purchasedNodes: ['despertar'],
       activeModeId: 'baseClicker',
       achievements: ['n_click100'],
+      playSeconds: 0,
     });
   });
 });
