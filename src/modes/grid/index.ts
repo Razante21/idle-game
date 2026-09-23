@@ -1,14 +1,19 @@
-import { createStubMode } from '../createStubMode';
+import { isModeUnlockedByTree } from '../../core/skillTree/logic';
+import type { GameMode } from '../../core/types';
+import { GridView } from './GridView';
+import { beaconBonuses, essenceRate, initialGridState, restore, tick, type GridState } from './logic';
 
-export const gridMode = createStubMode({
+export const gridMode: GameMode<GridState> = {
   id: 'grid',
   name: 'Constelação',
   icon: '✦',
-  tagline: 'Posicione estrelas num grid e crie sinergias por vizinhança',
+  tagline: 'Posicione estrelas num grid: a mesma peça rende mais ou menos conforme a vizinhança',
+  initialState: initialGridState,
+  isUnlocked: (meta) => isModeUnlockedByTree(meta.purchasedNodes, 'grid'),
   unlockDescription: 'Compre "Portal: Constelação" na Árvore',
-  plannedFeatures: [
-    'Grid onde cada peça buffa as vizinhas de formas diferentes',
-    'Otimização espacial: a mesma peça rende mais ou menos conforme a posição',
-    'Peças raras obtidas em outros modos',
-  ],
-});
+  tick,
+  essenceRate,
+  provides: beaconBonuses,
+  restore,
+  Component: GridView,
+};

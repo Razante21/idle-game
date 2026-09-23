@@ -1,14 +1,19 @@
-import { createStubMode } from '../createStubMode';
+import { isModeUnlockedByTree } from '../../core/skillTree/logic';
+import type { GameMode } from '../../core/types';
+import { essenceRate, initialRoguelikeState, provides, restore, tick, type RoguelikeState } from './logic';
+import { RoguelikeView } from './RoguelikeView';
 
-export const roguelikeMode = createStubMode({
+export const roguelikeMode: GameMode<RoguelikeState> = {
   id: 'roguelike',
   name: 'Expedição',
   icon: '⚔',
-  tagline: 'Runs curtas com escolhas de build e recompensas permanentes',
+  tagline: 'Runs curtas com escolhas de caminho; o que você traz de volta fortalece a rede',
+  initialState: initialRoguelikeState,
+  isUnlocked: (meta) => isModeUnlockedByTree(meta.purchasedNodes, 'roguelike'),
   unlockDescription: 'Compre "Portal: Expedição" na Árvore',
-  plannedFeatures: [
-    'Expedições curtas com eventos e escolhas aleatórias',
-    'Build montada durante a run, perdida ao final',
-    'Relíquias permanentes que fortalecem os outros modos',
-  ],
-});
+  tick,
+  essenceRate,
+  provides,
+  restore,
+  Component: RoguelikeView,
+};

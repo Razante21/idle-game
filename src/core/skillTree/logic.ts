@@ -1,4 +1,4 @@
-import type { EssenceRates, MetaState, ModeContext, ModeId, Stat } from '../types';
+import type { EssenceRates, MetaState, ModeId, Stat } from '../types';
 import { NODES_BY_ID, SKILL_TREE, type NodeRequirement, type SkillNode } from './treeData';
 
 export function getMultiplier(purchased: readonly string[], modeId: ModeId, stat: Stat): number {
@@ -14,27 +14,13 @@ export function getMultiplier(purchased: readonly string[], modeId: ModeId, stat
   return mult;
 }
 
-export function createModeContext(purchased: readonly string[], modeId: ModeId): ModeContext {
-  const cache = new Map<Stat, number>();
-  return {
-    multiplier(stat) {
-      let value = cache.get(stat);
-      if (value === undefined) {
-        value = getMultiplier(purchased, modeId, stat);
-        cache.set(stat, value);
-      }
-      return value;
-    },
-  };
-}
-
 export function isModeUnlockedByTree(purchased: readonly string[], modeId: ModeId): boolean {
   return purchased.some((id) =>
     NODES_BY_ID.get(id)?.effects.some((e) => e.type === 'unlockMode' && e.modeId === modeId),
   );
 }
 
-export function isRequirementMet(req: NodeRequirement, rates: EssenceRates): boolean {
+export function isRequirementMet(req: NodeRequirement, rates: Readonly<EssenceRates>): boolean {
   return rates[req.modeId] >= req.ratePerSecond;
 }
 

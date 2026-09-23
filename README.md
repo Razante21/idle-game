@@ -7,13 +7,15 @@ Cada modo tem uma mecânica própria e gera **Essência**, a moeda compartilhada
 desbloqueados continuam produzindo em paralelo, então os antigos continuam importantes depois que
 um novo abre.
 
-| Modo | Mecânica | Status |
+| Modo | Mecânica | Ligações com os outros modos |
 | --- | --- | --- |
-| Núcleo | Clique e geradores | Jogável |
-| Fábrica | Cadeias de produção | Planejado |
-| Constelação | Grid com sinergia por posição | Planejado |
-| Expedição | Runs curtas estilo roguelike | Planejado |
-| Ascensão | Segunda árvore com moeda própria | Planejado |
+| Núcleo | Clique e geradores que dobram a cada 25 | A energia acelera a Fábrica |
+| Fábrica | Operários numa cadeia Minério → Lingotes → Engrenagens → Máquinas | Máquinas fortalecem o Núcleo e a Expedição |
+| Constelação | Grid de estrelas com sinergia por vizinhança | Faróis fortalecem Núcleo, Fábrica ou Expedição |
+| Expedição | Runs roguelike com escolhas de sala e chefes | Relíquias fortalecem cada modo; o recorde fortalece a Constelação |
+| Ascensão | Segunda árvore movida a Éter, com caminhos exclusivos | O Éter vem de todos os modos; os caminhos mudam as regras dos outros |
+
+A Árvore principal também exige que modos antigos continuem produzindo para liberar os nós mais fundos.
 
 ## Rodando
 

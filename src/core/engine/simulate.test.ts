@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BaseClickerState } from '../../modes/baseClicker/logic';
+import type { ParallelTreeState } from '../../modes/parallelTree/logic';
+import type { ProductionChainState } from '../../modes/productionChain/logic';
 import { initialModeStates } from '../modeRegistry';
 import type { MetaState } from '../types';
 import { applyOfflineProgress, MAX_OFFLINE_SECONDS } from './offlineProgress';
@@ -34,6 +36,35 @@ describe('simulate', () => {
   it('keeps long intervals accurate with bounded steps', () => {
     const result = simulate(stateWith([10, 0, 0, 0, 0, 0]), 3600);
     expect((result.modes.baseClicker as BaseClickerState).energy).toBeCloseTo(5 * 3600);
+  });
+
+  it('links modes: Fábrica machines speed up the Núcleo, Ascensão rules reach it', () => {
+    const base = stateWith([20, 0, 0, 0, 0, 0], { purchasedNodes: ['unlock_productionChain', 'unlock_parallelTree'] });
+    const plain = simulate(base, 1).modes.baseClicker as BaseClickerState;
+
+    const withMachines: SimState = {
+      ...base,
+      modes: {
+        ...base.modes,
+        productionChain: {
+          ...(base.modes.productionChain as ProductionChainState),
+          resources: { minerio: 0, lingote: 0, engrenagem: 0, maquina: 16 },
+        },
+      },
+    };
+    expect((simulate(withMachines, 1).modes.baseClicker as BaseClickerState).energy).toBeCloseTo(plain.energy * 2);
+
+    const withAutoclick: SimState = {
+      ...base,
+      modes: { ...base.modes, parallelTree: { ether: 0, totalEther: 0, nodes: ['forjaAstral', 'maosInvisiveis'] } },
+    };
+    expect((simulate(withAutoclick, 1).modes.baseClicker as BaseClickerState).energy).toBeGreaterThan(plain.energy * 1.5);
+  });
+
+  it('Ascensão earns Éter from the other modes’ essence', () => {
+    const state = stateWith([20, 0, 0, 0, 0, 0], { purchasedNodes: ['unlock_parallelTree'] });
+    const result = simulate(state, 10);
+    expect((result.modes.parallelTree as ParallelTreeState).ether).toBeGreaterThan(0);
   });
 
   it('caps offline progress', () => {

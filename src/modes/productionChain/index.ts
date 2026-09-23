@@ -1,14 +1,26 @@
-import { createStubMode } from '../createStubMode';
+import { isModeUnlockedByTree } from '../../core/skillTree/logic';
+import type { GameMode } from '../../core/types';
+import {
+  essenceRate,
+  initialProductionChainState,
+  provides,
+  restore,
+  tick,
+  type ProductionChainState,
+} from './logic';
+import { ProductionChainView } from './ProductionChainView';
 
-export const productionChainMode = createStubMode({
+export const productionChainMode: GameMode<ProductionChainState> = {
   id: 'productionChain',
   name: 'Fábrica',
   icon: '⚙',
-  tagline: 'Cadeias de produção onde cada recurso alimenta o próximo',
+  tagline: 'Distribua operários numa cadeia onde cada recurso alimenta o próximo',
+  initialState: initialProductionChainState,
+  isUnlocked: (meta) => isModeUnlockedByTree(meta.purchasedNodes, 'productionChain'),
   unlockDescription: 'Compre "Portal: Fábrica" na Árvore',
-  plannedFeatures: [
-    'Recursos encadeados: matéria-prima → componentes → máquinas',
-    'Trabalhadores alocados entre processos, gargalos a resolver',
-    'Gera Essência de forma estável, mas depende de energia do Núcleo',
-  ],
-});
+  tick,
+  essenceRate,
+  provides,
+  restore,
+  Component: ProductionChainView,
+};

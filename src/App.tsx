@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ModeLinks } from './components/ModeLinks';
 import { ModeSelectorBar } from './components/ModeSelectorBar';
 import { ResourceHUD } from './components/ResourceHUD';
+import { bonusesFor, buildContexts, collectBonuses } from './core/engine/contexts';
 import { clearSave, saveGame } from './core/engine/persistence';
 import { startTickLoop } from './core/engine/tickLoop';
 import { formatDuration, formatNumber } from './core/format';
 import { getMode } from './core/modeRegistry';
 import { SkillTreeView } from './core/skillTree/SkillTreeView';
-import { createModeContext } from './core/skillTree/logic';
 import { useGameStore } from './core/store/gameStore';
 import styles from './App.module.css';
 
@@ -42,14 +43,15 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
     };
   }, []);
 
-  const activeId = useGameStore((s) => s.meta.activeModeId);
-  const purchased = useGameStore((s) => s.meta.purchasedNodes);
-  const modeState = useGameStore((s) => s.modes[activeId]);
-  const essenceRate = useGameStore((s) => s.essenceRates[activeId]);
+  const meta = useGameStore((s) => s.meta);
+  const modes = useGameStore((s) => s.modes);
+  const rates = useGameStore((s) => s.essenceRates);
   const updateMode = useGameStore((s) => s.updateMode);
 
+  const activeId = meta.activeModeId;
   const mode = getMode(activeId);
-  const ctx = useMemo(() => createModeContext(purchased, activeId), [purchased, activeId]);
+  const ctx = useMemo(() => buildContexts(meta, modes, rates)[activeId], [meta, modes, rates, activeId]);
+  const incoming = useMemo(() => bonusesFor(collectBonuses(meta, modes), activeId), [meta, modes, activeId]);
   const update = useCallback(
     (fn: (state: unknown) => unknown) => updateMode(activeId, fn),
     [updateMode, activeId],
@@ -74,8 +76,9 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
             <span className={styles.modeIcon}>{mode.icon}</span> {mode.name}
           </h1>
           <p className={styles.modeTagline}>{mode.tagline}</p>
+          <ModeLinks modeId={activeId} meta={meta} incoming={incoming} />
         </div>
-        <ModeView state={modeState} ctx={ctx} essenceRate={essenceRate} update={update} />
+        <ModeView state={modes[activeId]} ctx={ctx} essenceRate={rates[activeId]} update={update} />
       </main>
 
       <ModeSelectorBar />
