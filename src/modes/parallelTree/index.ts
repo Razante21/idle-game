@@ -1,6 +1,6 @@
 import { isModeUnlockedByTree } from '../../core/skillTree/logic';
 import type { GameMode } from '../../core/types';
-import { essenceRate, flags, initialParallelTreeState, provides, restore, tick, type ParallelTreeState } from './logic';
+import { essenceRate, flags, initialParallelTreeState, onCollapse, provides, restore, tick, type ParallelTreeState } from './logic';
 import { ParallelTreeView } from './ParallelTreeView';
 
 export const parallelTreeMode: GameMode<ParallelTreeState> = {
@@ -15,6 +15,7 @@ export const parallelTreeMode: GameMode<ParallelTreeState> = {
   essenceRate,
   provides,
   flags,
+  onCollapse,
   restore,
   Component: ParallelTreeView,
 };

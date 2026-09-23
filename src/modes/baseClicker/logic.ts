@@ -1,7 +1,7 @@
 import { logSquared } from '../../core/curves';
 import { createRng, validSeed } from '../../core/rng';
 import type { ModeBonus, ModeContext } from '../../core/types';
-import { GENERATORS, UPGRADES_BY_ID, type GeneratorDef, type UpgradeDef, type UpgradeRequirement } from './upgrades';
+import { GENERATORS, UPGRADES, UPGRADES_BY_ID, type GeneratorDef, type UpgradeDef, type UpgradeRequirement } from './upgrades';
 
 export { GENERATORS };
 
@@ -10,6 +10,7 @@ const MILESTONE_EVERY_ASCENDED = 20;
 const AUTO_CLICKS_PER_SECOND = 5;
 const BASE_CLICK_SHARE = 0.05;
 const ESSENCE_DIVISOR = 8;
+const SILENCE_TRICKLE = 1;
 
 export const SURGE_MULT = 7;
 const SURGE_DURATION = 30;
@@ -155,8 +156,10 @@ export function surgeMultiplier(state: BaseClickerState): number {
 }
 
 export function productionPerSecond(state: BaseClickerState, ctx: ModeContext): number {
+  // No Silêncio os cliques não geram nada; um pulso mínimo evita que o ciclo comece travado.
+  const trickle = ctx.hasFlag('anomalia.silencio') ? SILENCE_TRICKLE : 0;
   return (
-    rawProduction(state, milestoneEvery(ctx)) *
+    (rawProduction(state, milestoneEvery(ctx)) + trickle) *
     cargaMultiplier(state) *
     surgeMultiplier(state) *
     ctx.multiplier('production')
@@ -164,6 +167,7 @@ export function productionPerSecond(state: BaseClickerState, ctx: ModeContext): 
 }
 
 export function clickValue(state: BaseClickerState, ctx: ModeContext): number {
+  if (ctx.hasFlag('anomalia.silencio')) return 0;
   const m = modifiers(state.upgrades);
   return (1 + m.clickShare * productionPerSecond(state, ctx)) * m.clickMult * ctx.multiplier('click');
 }
@@ -236,9 +240,34 @@ export function catchSurge(state: BaseClickerState, ctx: ModeContext): BaseClick
 export function tick(state: BaseClickerState, deltaSeconds: number, ctx: ModeContext): BaseClickerState {
   let perSecond = productionPerSecond(state, ctx);
   if (ctx.hasFlag('nucleo.autoclick')) perSecond += clickValue(state, ctx) * AUTO_CLICKS_PER_SECOND;
-  const next = tickSurge(state, deltaSeconds, ctx);
+  let next = tickSurge(state, deltaSeconds, ctx);
   const gained = perSecond * deltaSeconds;
-  return gained === 0 ? next : addEnergy(next, gained);
+  if (gained !== 0) next = addEnergy(next, gained);
+  if (ctx.hasFlag('nucleo.autoMelhorias')) next = buyAllUpgrades(next);
+  if (ctx.hasFlag('nucleo.autoGeradores')) next = autoBuyGenerators(next);
+  return next;
+}
+
+export function buyAllUpgrades(state: BaseClickerState): BaseClickerState {
+  let next = state;
+  for (const u of UPGRADES) if (upgradeStatus(next, u) === 'available') next = buyUpgrade(next, u.id);
+  return next;
+}
+
+/**
+ * Mão Autômata: compra do gerador mais alto para o mais baixo, gastando no máximo metade da energia
+ * para sobrar para as melhorias (Engenheiro Fantasma).
+ */
+function autoBuyGenerators(state: BaseClickerState): BaseClickerState {
+  let next = state;
+  for (let i = GENERATORS.length - 1; i >= 0; i--) {
+    const revealed = i === 0 || (next.owned[i - 1] ?? 0) > 0;
+    if (!revealed) continue;
+    const owned = next.owned[i] ?? 0;
+    const amount = maxAffordable(i, owned, next.energy * 0.5);
+    if (amount > 0) next = buyGenerator(next, i, amount);
+  }
+  return next;
 }
 
 export function click(state: BaseClickerState, ctx: ModeContext): BaseClickerState {
@@ -314,6 +343,20 @@ export function provides(state: BaseClickerState): ModeBonus[] {
       source: 'Energia do Núcleo',
     },
   ];
+}
+
+/** Colapso: zera o Núcleo, mas guarda parte da Carga e o histórico de cliques e Surtos. */
+export function onCollapse(state: BaseClickerState, keeps: ReadonlySet<string>): BaseClickerState {
+  const kept = keeps.has('carga') ? 0.6 : 0.25;
+  return {
+    ...initialBaseClickerState,
+    totalEnergy: state.totalEnergy,
+    clicks: state.clicks,
+    carga: Math.floor(state.carga * kept),
+    sobrecargas: state.sobrecargas,
+    surge: { ...initialBaseClickerState.surge, caught: state.surge.caught },
+    seed: state.seed,
+  };
 }
 
 export function restore(saved: unknown): BaseClickerState {

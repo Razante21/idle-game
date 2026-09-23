@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AchievementsView } from './components/AchievementsView';
 import { MenuView } from './components/MenuView';
+import { CollapseView } from './components/CollapseView';
+import { ANOMALIES } from './core/cosmos/data';
 import { ModeLinks } from './components/ModeLinks';
 import { ModeSelectorBar } from './components/ModeSelectorBar';
 import { ResourceHUD } from './components/ResourceHUD';
@@ -30,6 +32,7 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
   const [treeOpen, setTreeOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [collapseOpen, setCollapseOpen] = useState(false);
   const [welcomeReport, setWelcomeReport] = useState(welcome);
   const toastId = useGameStore((s) => s.toasts[0]);
   const toast = toastId ? ACHIEVEMENTS.find((x) => x.id === toastId) : undefined;
@@ -79,9 +82,27 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
         onOpenTree={() => setTreeOpen(true)}
         onOpenAchievements={() => setAchievementsOpen(true)}
         onOpenMenu={() => setMenuOpen(true)}
+        onOpenCollapse={() => setCollapseOpen(true)}
       />
 
       <main className={styles.main}>
+        {meta.cosmos.anomaly && (
+          <div className={styles.anomaly} role="status">
+            <span>
+              <strong>Anomalia: {ANOMALIES[meta.cosmos.anomaly].name}</strong> · {ANOMALIES[meta.cosmos.anomaly].rule}. Vença
+              comprando o Portal da Expedição.
+            </span>
+            <button
+              onClick={() => {
+                if (window.confirm('Abandonar a Anomalia? O ciclo continua sem a regra e sem a recompensa.')) {
+                  useGameStore.getState().abandonAnomaly();
+                }
+              }}
+            >
+              Abandonar
+            </button>
+          </div>
+        )}
         <div className={styles.modeHeader}>
           <h1 className={styles.modeTitle}>
             <span className={styles.modeIcon}>{mode.icon}</span> {mode.name}
@@ -97,6 +118,7 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
       {treeOpen && <SkillTreeView onClose={() => setTreeOpen(false)} />}
       {achievementsOpen && <AchievementsView onClose={() => setAchievementsOpen(false)} />}
       {menuOpen && <MenuView onClose={() => setMenuOpen(false)} />}
+      {collapseOpen && <CollapseView onClose={() => setCollapseOpen(false)} />}
 
       {toast && (
         <div className={styles.toast} role="status">

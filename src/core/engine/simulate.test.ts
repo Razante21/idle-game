@@ -3,6 +3,7 @@ import type { BaseClickerState } from '../../modes/baseClicker/logic';
 import type { ParallelTreeState } from '../../modes/parallelTree/logic';
 import type { ProductionChainState } from '../../modes/productionChain/logic';
 import { logSquared } from '../curves';
+import { initialMeta } from '../meta';
 import { initialModeStates } from '../modeRegistry';
 import type { MetaState } from '../types';
 import { applyOfflineProgress, MAX_OFFLINE_SECONDS } from './offlineProgress';
@@ -14,7 +15,7 @@ function stateWith(owned: number[], meta: Partial<MetaState> = {}): SimState {
   const padded = Array.from({ length: 12 }, (_, i) => owned[i] ?? 0);
   modes.baseClicker = { ...(modes.baseClicker as BaseClickerState), owned: padded };
   return {
-    meta: { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], playSeconds: 0, ...meta },
+    meta: { ...initialMeta(), ...meta },
     modes,
   };
 }
@@ -116,6 +117,7 @@ describe('persistence', () => {
       activeModeId: 'baseClicker',
       achievements: ['n_click100'],
       playSeconds: 0,
+      cosmos: initialMeta().cosmos,
     });
   });
 });

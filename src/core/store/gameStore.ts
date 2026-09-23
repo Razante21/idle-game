@@ -1,11 +1,20 @@
 import { create } from 'zustand';
 import { newlyEarned } from '../achievements';
-import { MAX_OFFLINE_SECONDS } from '../engine/offlineProgress';
+import {
+  abandonAnomaly,
+  buyCosmos,
+  collapse,
+  completeAnomalyIfReached,
+  hasAutoTree,
+  offlineCapSeconds,
+} from '../cosmos/logic';
 import { computeEssenceRates, simulate, type SimState } from '../engine/simulate';
+import { initialMeta } from '../meta';
 import { getMode, initialModeStates } from '../modeRegistry';
-import { getNodeStatus } from '../skillTree/logic';
-import { NODES_BY_ID } from '../skillTree/treeData';
-import type { EssenceRates, MetaState, ModeId } from '../types';
+import { autoBuyNodes, purchaseNode } from '../skillTree/logic';
+import type { AnomalyId, EssenceRates, MetaState, ModeId } from '../types';
+
+export { initialMeta };
 
 export interface GameStore extends SimState {
   essenceRates: EssenceRates;
@@ -15,13 +24,12 @@ export interface GameStore extends SimState {
   updateMode<T>(id: ModeId, fn: (state: T) => T): void;
   setActiveMode(id: ModeId): void;
   buyNode(id: string): void;
+  collapse(nextAnomaly: AnomalyId | null): void;
+  buyCosmos(id: string): void;
+  abandonAnomaly(): void;
   hydrate(state: SimState): void;
   dismissToast(): void;
   reset(): void;
-}
-
-export function initialMeta(): MetaState {
-  return { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], playSeconds: 0 };
 }
 
 function freshState(): SimState & { essenceRates: EssenceRates; toasts: string[] } {
@@ -40,10 +48,12 @@ export const useGameStore = create<GameStore>()((set, get) => ({
 
   advance(seconds) {
     const { meta, modes, essenceRates, toasts } = get();
-    const result = simulate({ meta, modes }, Math.min(seconds, MAX_OFFLINE_SECONDS), essenceRates);
-    const { meta: nextMeta, earned } = withAchievements(result);
+    const result = simulate({ meta, modes }, Math.min(seconds, offlineCapSeconds(meta.cosmos)), essenceRates);
+    let nextMeta = result.meta;
+    if (hasAutoTree(nextMeta.cosmos)) nextMeta = completeAnomalyIfReached(autoBuyNodes(nextMeta, result.essenceRates));
+    const { meta: withAch, earned } = withAchievements({ meta: nextMeta, modes: result.modes });
     set({
-      meta: nextMeta,
+      meta: withAch,
       modes: result.modes,
       essenceRates: result.essenceRates,
       toasts: earned.length ? [...toasts, ...earned] : toasts,
@@ -61,15 +71,30 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   },
 
   buyNode(id) {
-    const node = NODES_BY_ID.get(id);
     const { meta, modes, essenceRates } = get();
-    if (!node || getNodeStatus(node, meta, essenceRates) !== 'available') return;
-    const nextMeta: MetaState = {
-      ...meta,
-      essence: meta.essence - node.cost,
-      purchasedNodes: [...meta.purchasedNodes, id],
-    };
+    const bought = purchaseNode(meta, id, essenceRates);
+    if (!bought) return;
+    const nextMeta = completeAnomalyIfReached(bought);
     set({ meta: nextMeta, essenceRates: computeEssenceRates({ meta: nextMeta, modes }, essenceRates) });
+  },
+
+  collapse(nextAnomaly) {
+    const { meta, modes } = get();
+    const next = collapse({ meta, modes }, nextAnomaly);
+    if (next.meta === meta) return;
+    set({ ...next, essenceRates: computeEssenceRates(next) });
+  },
+
+  buyCosmos(id) {
+    const { meta, modes, essenceRates } = get();
+    const cosmos = buyCosmos(meta.cosmos, id);
+    if (cosmos === meta.cosmos) return;
+    const nextMeta = { ...meta, cosmos };
+    set({ meta: nextMeta, essenceRates: computeEssenceRates({ meta: nextMeta, modes }, essenceRates) });
+  },
+
+  abandonAnomaly() {
+    set((s) => ({ meta: abandonAnomaly(s.meta) }));
   },
 
   hydrate(state) {

@@ -4,6 +4,9 @@
  */
 import { buildContexts } from '../core/engine/contexts';
 import { computeEssenceRates, simulate, type SimState } from '../core/engine/simulate';
+import { COSMOLOGY } from '../core/cosmos/data';
+import { buyCosmos, canCollapse, collapse, collapseGain, completeAnomalyIfReached, cosmosNodeStatus } from '../core/cosmos/logic';
+import { initialMeta } from '../core/meta';
 import { initialModeStates } from '../core/modeRegistry';
 import { getNodeStatus } from '../core/skillTree/logic';
 import { SKILL_TREE } from '../core/skillTree/treeData';
@@ -20,6 +23,8 @@ export interface BotOptions {
   clicksPerSecond: number;
   /** Segundos de jogo entre decisões do robô. */
   decisionEvery: number;
+  /** Colapsa assim que o ganho de Singularidades chegar a este valor (0 = nunca). */
+  collapseAtGain: number;
   trace?: (t: number, state: SimState, rates: EssenceRates) => void;
 }
 
@@ -30,7 +35,8 @@ export interface BotReport {
   nodes: number;
 }
 
-const DEFAULTS: BotOptions = { hours: 48, clicksPerSecond: 3, decisionEvery: 1 };
+const DEFAULTS: BotOptions = { hours: 48, clicksPerSecond: 3, decisionEvery: 1, collapseAtGain: 6 };
+const KEY_NODES = new Set(['unlock_productionChain', 'unlock_grid', 'unlock_roguelike', 'unlock_parallelTree', 'harmonia', 'singularidade', 'omega']);
 
 type Modes = SimState['modes'];
 
@@ -165,7 +171,7 @@ function playAscensao(s: asc.ParallelTreeState): asc.ParallelTreeState {
 export function runBot(options: Partial<BotOptions> = {}): BotReport {
   const opts = { ...DEFAULTS, ...options };
   let state: SimState = {
-    meta: { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], playSeconds: 0 },
+    meta: initialMeta(),
     modes: initialModeStates(),
   };
   let rates = computeEssenceRates(state);
@@ -188,12 +194,30 @@ export function runBot(options: Partial<BotOptions> = {}): BotReport {
     if (has('parallelTree')) modes.parallelTree = playAscensao(modes.parallelTree as asc.ParallelTreeState);
 
     // Árvore: compra o nó disponível mais barato, repetidamente.
+    const cycle = state.meta.cosmos.collapses + 1;
     let meta = state.meta;
     for (;;) {
       const node = SKILL_TREE.filter((n) => getNodeStatus(n, meta, rates) === 'available').sort((a, b) => a.cost - b.cost)[0];
       if (!node) break;
-      meta = { ...meta, essence: meta.essence - node.cost, purchasedNodes: [...meta.purchasedNodes, node.id] };
-      mark(`nó: ${node.id}`, t);
+      meta = completeAnomalyIfReached({ ...meta, essence: meta.essence - node.cost, purchasedNodes: [...meta.purchasedNodes, node.id] });
+      if (cycle === 1 || KEY_NODES.has(node.id)) mark(`ciclo ${cycle} · nó: ${node.id}`, t);
+    }
+
+    const gain = collapseGain(meta.cosmos.runEssence);
+    // Como um jogador: só colapsa quando o ganho vale a pena (pelo menos metade do que já acumulou).
+    const worthIt = Math.max(opts.collapseAtGain, Math.ceil(meta.cosmos.totalSingularities * 0.5));
+    if (opts.collapseAtGain > 0 && canCollapse(meta) && gain >= worthIt) {
+      state = collapse({ meta, modes });
+      let cosmos = state.meta.cosmos;
+      for (;;) {
+        const next = COSMOLOGY.filter((n) => cosmosNodeStatus(cosmos, n) === 'available').sort((a, b) => a.cost - b.cost)[0];
+        if (!next) break;
+        cosmos = buyCosmos(cosmos, next.id);
+      }
+      state = { ...state, meta: { ...state.meta, cosmos } };
+      rates = computeEssenceRates(state);
+      mark(`Colapso #${cosmos.collapses} (+${gain} Singularidades, Cosmologia: ${cosmos.nodes.length} nós)`, t);
+      continue;
     }
 
     const result = simulate({ meta, modes }, opts.decisionEvery, rates, 1);

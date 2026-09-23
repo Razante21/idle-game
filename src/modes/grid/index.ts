@@ -1,7 +1,7 @@
 import { isModeUnlockedByTree } from '../../core/skillTree/logic';
 import type { GameMode } from '../../core/types';
 import { GridView } from './GridView';
-import { beaconBonuses, essenceRate, initialGridState, restore, tick, type GridState } from './logic';
+import { beaconBonuses, essenceRate, initialGridState, onCollapse, restore, tick, type GridState } from './logic';
 
 export const gridMode: GameMode<GridState> = {
   id: 'grid',
@@ -14,6 +14,7 @@ export const gridMode: GameMode<GridState> = {
   tick,
   essenceRate,
   provides: beaconBonuses,
+  onCollapse,
   restore,
   Component: GridView,
 };

@@ -4,20 +4,41 @@ export type ModeId = 'baseClicker' | 'productionChain' | 'grid' | 'roguelike' | 
 
 export type Stat = 'production' | 'click' | 'essence';
 
-/** Regras especiais que um modo pode ligar em outro (em geral vindas da Ascensão). */
+/** Regras especiais ligadas por outros modos (Ascensão), pela Cosmologia ou por uma Anomalia. */
 export type Flag =
   | 'nucleo.autoclick'
   | 'nucleo.milestone20'
   | 'nucleo.surtoFrequente'
+  | 'nucleo.autoGeradores'
+  | 'nucleo.autoMelhorias'
   | 'fabrica.eficiencia'
   | 'fabrica.armazemInfinito'
   | 'fabrica.contratosDobrados'
+  | 'fabrica.autoContratos'
   | 'constelacao.diagonal'
   | 'constelacao.fusaoBarata'
   | 'expedicao.segundaChance'
   | 'expedicao.autoGratis'
   | 'expedicao.lojaDesconto'
-  | 'expedicao.maldicaoLeve';
+  | 'expedicao.maldicaoLeve'
+  | 'anomalia.silencio'
+  | 'anomalia.escassez'
+  | 'anomalia.ceuPequeno'
+  | 'anomalia.ferro';
+
+export type AnomalyId = 'silencio' | 'escassez' | 'ceuPequeno' | 'ferro' | 'entropia' | 'isolamento';
+
+/** Progresso que sobrevive ao Colapso. */
+export interface CosmosState {
+  singularities: number;
+  totalSingularities: number;
+  collapses: number;
+  nodes: string[];
+  /** Essência ganha desde o último Colapso; define as Singularidades do próximo. */
+  runEssence: number;
+  anomaly: AnomalyId | null;
+  anomaliesDone: AnomalyId[];
+}
 
 export interface MetaState {
   essence: number;
@@ -26,6 +47,7 @@ export interface MetaState {
   activeModeId: ModeId;
   achievements: string[];
   playSeconds: number;
+  cosmos: CosmosState;
 }
 
 export type EssenceRates = Record<ModeId, number>;
@@ -68,6 +90,8 @@ export interface GameMode<TState> {
   /** Bônus que este modo concede aos outros enquanto estiver desbloqueado. */
   provides?(state: TState): ModeBonus[];
   flags?(state: TState): Flag[];
+  /** Estado depois de um Colapso; o padrão é voltar ao initialState. `keeps` diz o que a Cosmologia preserva. */
+  onCollapse?(state: TState, keeps: ReadonlySet<string>): TState;
   /** Reconstrói o estado a partir de um save antigo; o padrão é mesclar sobre o initialState. */
   restore?(saved: unknown): TState;
   Component: ComponentType<ModeViewProps<TState>>;

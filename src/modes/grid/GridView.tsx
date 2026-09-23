@@ -12,6 +12,7 @@ import {
   PIECE_TYPES,
   beaconBonuses,
   buy,
+  canExpand,
   cellOutput,
   dustPerSecond,
   expand,
@@ -98,11 +99,12 @@ export function GridView({ state, ctx, essenceRate, update }: ModeViewProps<Grid
           <p className={s.muted}>
             Selecione uma peça e clique numa célula. Clique numa peça colocada para devolvê-la ao inventário.
           </p>
-          {nextExpand !== null && (
-            <button disabled={state.dust < nextExpand} onClick={() => update(expand)}>
+          {nextExpand !== null && canExpand(ctx) && (
+            <button disabled={state.dust < nextExpand} onClick={() => update((x) => expand(x, ctx))}>
               Expandir para {state.size + 1}x{state.size + 1} ({formatNumber(nextExpand)} poeira)
             </button>
           )}
+          {!canExpand(ctx) && <p className={s.warning}>Anomalia Céu Pequeno: o grid não pode crescer neste ciclo.</p>}
         </section>
 
         {beacons.length > 0 && (

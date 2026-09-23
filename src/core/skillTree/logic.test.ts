@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { initialMeta } from '../meta';
 import { zeroRates } from '../modeRegistry';
 import type { MetaState } from '../types';
 import { getMultiplier, getNodeStatus, isModeUnlockedByTree } from './logic';
 import { NODES_BY_ID, SKILL_TREE } from './treeData';
 
 function meta(partial: Partial<MetaState> = {}): MetaState {
-  return { essence: 0, totalEssence: 0, purchasedNodes: [], activeModeId: 'baseClicker', achievements: [], playSeconds: 0, ...partial };
+  return { ...initialMeta(), ...partial };
 }
 
 function node(id: string) {

@@ -37,6 +37,7 @@ function makeRun(run: Partial<Run> = {}): Run {
     curses: [],
     shopOpen: false,
     auto: false,
+    iron: false,
     ...run,
   };
 }

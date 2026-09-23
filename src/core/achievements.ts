@@ -1,3 +1,4 @@
+import { ANOMALY_IDS, COSMOLOGY } from './cosmos/data';
 import type { SimState } from './engine/simulate';
 import { SKILL_TREE } from './skillTree/treeData';
 import type { ModeId } from './types';
@@ -11,7 +12,7 @@ import { TECH_IDS } from '../modes/productionChain/logic';
 import type { RoguelikeState } from '../modes/roguelike/logic';
 import { CLASS_IDS, RELIC_IDS } from '../modes/roguelike/logic';
 
-export type AchievementCategory = 'Núcleo' | 'Fábrica' | 'Constelação' | 'Expedição' | 'Ascensão' | 'Rede';
+export type AchievementCategory = 'Núcleo' | 'Fábrica' | 'Constelação' | 'Expedição' | 'Ascensão' | 'Rede' | 'Cosmos';
 
 export interface Achievement {
   id: string;
@@ -90,6 +91,14 @@ export const ACHIEVEMENTS: Achievement[] = [
     (['productionChain', 'grid', 'roguelike', 'parallelTree'] as ModeId[]).every((m) => unlocked(s, `unlock_${m}`)),
   ),
   a('Rede', 'm_tree', 'Arquiteto', 'Comprar todos os nós da Árvore', (s) => SKILL_TREE.every((n) => unlocked(s, n.id))),
+
+  a('Cosmos', 'k_collapse1', 'Big Crunch', 'Fazer o primeiro Colapso', (s) => s.meta.cosmos.collapses >= 1),
+  a('Cosmos', 'k_collapse5', 'Eterno Retorno', 'Fazer 5 Colapsos', (s) => s.meta.cosmos.collapses >= 5),
+  a('Cosmos', 'k_sing50', 'Horizonte', 'Acumular 50 Singularidades', (s) => s.meta.cosmos.totalSingularities >= 50),
+  a('Cosmos', 'k_cosmos8', 'Cosmólogo', 'Comprar 8 nós da Cosmologia', (s) => s.meta.cosmos.nodes.length >= 8),
+  a('Cosmos', 'k_cosmosAll', 'Teoria de Tudo', 'Comprar toda a Cosmologia', (s) => s.meta.cosmos.nodes.length >= COSMOLOGY.length),
+  a('Cosmos', 'k_anomaly1', 'Sobrevivente', 'Vencer uma Anomalia', (s) => s.meta.cosmos.anomaliesDone.length >= 1),
+  a('Cosmos', 'k_anomalyAll', 'Imune ao Caos', 'Vencer todas as Anomalias', (s) => s.meta.cosmos.anomaliesDone.length >= ANOMALY_IDS.length),
 ];
 
 export const ACHIEVEMENT_IDS: ReadonlySet<string> = new Set(ACHIEVEMENTS.map((x) => x.id));

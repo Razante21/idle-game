@@ -7,6 +7,7 @@ import {
   GENERATORS,
   SURGE_MULT,
   bulkCost,
+  buyAllUpgrades,
   buyGenerator,
   buyUpgrade,
   cargaGain,
@@ -27,12 +28,6 @@ import styles from './BaseClickerView.module.css';
 
 type Tab = 'geradores' | 'melhorias' | 'sobrecarga';
 const LOCKED_PREVIEW = 3;
-
-function buyAllUpgrades(state: BaseClickerState): BaseClickerState {
-  let next = state;
-  for (const u of UPGRADES) if (upgradeStatus(next, u) === 'available') next = buyUpgrade(next, u.id);
-  return next;
-}
 
 export function BaseClickerView({ state, ctx, essenceRate, update }: ModeViewProps<BaseClickerState>) {
   const [tab, setTab] = useState<Tab>('geradores');
