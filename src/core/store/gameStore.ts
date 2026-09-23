@@ -29,8 +29,8 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   ...freshState(),
 
   advance(seconds) {
-    const { meta, modes } = get();
-    const result = simulate({ meta, modes }, Math.min(seconds, MAX_OFFLINE_SECONDS));
+    const { meta, modes, essenceRates } = get();
+    const result = simulate({ meta, modes }, Math.min(seconds, MAX_OFFLINE_SECONDS), essenceRates);
     set({ meta: result.meta, modes: result.modes, essenceRates: result.essenceRates });
   },
 
@@ -53,7 +53,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       essence: meta.essence - node.cost,
       purchasedNodes: [...meta.purchasedNodes, id],
     };
-    set({ meta: nextMeta, essenceRates: computeEssenceRates({ meta: nextMeta, modes }) });
+    set({ meta: nextMeta, essenceRates: computeEssenceRates({ meta: nextMeta, modes }, essenceRates) });
   },
 
   hydrate(state) {

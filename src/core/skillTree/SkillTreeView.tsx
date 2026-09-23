@@ -87,16 +87,22 @@ export function SkillTreeView({ onClose }: Props) {
                   ) : (
                     <span className={styles.nodeDetail}>{node.description}</span>
                   )}
-                  {status !== 'purchased' &&
-                    node.requirements?.map((req) => (
-                      <span
-                        key={req.modeId}
-                        className={isRequirementMet(req, rates) ? styles.reqMet : styles.reqUnmet}
-                      >
-                        {getMode(req.modeId).name} ≥ {formatNumber(req.ratePerSecond)}/s (agora{' '}
-                        {formatNumber(rates[req.modeId])})
-                      </span>
-                    ))}
+                  {status !== 'purchased' && node.requirements && (
+                    <span className={styles.reqs}>
+                      {node.requirements.map((req) => {
+                        const mode = getMode(req.modeId);
+                        return (
+                          <span
+                            key={req.modeId}
+                            className={isRequirementMet(req, rates) ? styles.reqMet : styles.reqUnmet}
+                            title={`${mode.name} precisa gerar ${formatNumber(req.ratePerSecond)} Essência/s (agora ${formatNumber(rates[req.modeId])})`}
+                          >
+                            {mode.icon} ≥{formatNumber(req.ratePerSecond)}/s
+                          </span>
+                        );
+                      })}
+                    </span>
+                  )}
                   <span className={styles.nodeCost}>
                     {status === 'purchased' ? 'Adquirido' : `${formatNumber(node.cost)} Essência`}
                   </span>

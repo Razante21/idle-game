@@ -1,6 +1,6 @@
-import { MODES, zeroRates } from '../modeRegistry';
-import { createModeContext } from '../skillTree/logic';
-import type { EssenceRates, MetaState, ModeStates } from '../types';
+import { zeroRates } from '../modeRegistry';
+import type { EssenceRates, MetaState, ModeContext, ModeId, ModeStates } from '../types';
+import { buildContexts, unlockedModes } from './contexts';
 
 export interface SimState {
   meta: MetaState;
@@ -15,38 +15,46 @@ export interface SimResult extends SimState {
 const MAX_STEP_SECONDS = 0.1;
 const MAX_STEPS = 2000;
 
-function activeModes(meta: MetaState) {
-  return MODES.filter((m) => m.isUnlocked(meta)).map((mode) => ({
-    mode,
-    ctx: createModeContext(meta.purchasedNodes, mode.id),
-  }));
-}
-
-export function computeEssenceRates(state: SimState): EssenceRates {
+function ratesFrom(state: SimState, contexts: Record<ModeId, ModeContext>): EssenceRates {
   const rates = zeroRates();
-  for (const { mode, ctx } of activeModes(state.meta)) {
+  for (const mode of unlockedModes(state.meta)) {
+    const ctx = contexts[mode.id];
     rates[mode.id] = mode.essenceRate(state.modes[mode.id], ctx) * ctx.multiplier('essence');
   }
   return rates;
 }
 
+/** Calcula as taxas atuais; roda duas vezes porque modos como a Ascensão leem as taxas dos outros. */
+export function computeEssenceRates(state: SimState, previous: EssenceRates = zeroRates()): EssenceRates {
+  const first = ratesFrom(state, buildContexts(state.meta, state.modes, previous));
+  return ratesFrom(state, buildContexts(state.meta, state.modes, first));
+}
+
 /**
- * Avança todos os modos desbloqueados em paralelo. Intervalos longos (aba em segundo plano,
- * progresso offline) são divididos em no máximo MAX_STEPS passos para manter o custo limitado.
+ * Avança todos os modos desbloqueados em paralelo. Os bônus entre modos são recalculados a cada passo;
+ * intervalos longos (aba em segundo plano, progresso offline) usam no máximo MAX_STEPS passos.
  */
-export function simulate(state: SimState, seconds: number): SimResult {
-  const active = activeModes(state.meta);
-  const modes = { ...state.modes };
+export function simulate(state: SimState, seconds: number, previousRates?: EssenceRates): SimResult {
+  const active = unlockedModes(state.meta);
+  let modes = { ...state.modes };
+  let rates = previousRates ?? computeEssenceRates(state);
   let gained = 0;
 
   if (seconds > 0) {
     const steps = Math.min(Math.max(1, Math.ceil(seconds / MAX_STEP_SECONDS)), MAX_STEPS);
     const dt = seconds / steps;
     for (let i = 0; i < steps; i++) {
-      for (const { mode, ctx } of active) {
-        modes[mode.id] = mode.tick(modes[mode.id], dt, ctx);
-        gained += mode.essenceRate(modes[mode.id], ctx) * ctx.multiplier('essence') * dt;
+      const contexts = buildContexts(state.meta, modes, rates);
+      const nextModes = { ...modes };
+      const nextRates = zeroRates();
+      for (const mode of active) {
+        const ctx = contexts[mode.id];
+        nextModes[mode.id] = mode.tick(modes[mode.id], dt, ctx);
+        nextRates[mode.id] = mode.essenceRate(nextModes[mode.id], ctx) * ctx.multiplier('essence');
+        gained += nextRates[mode.id] * dt;
       }
+      modes = nextModes;
+      rates = nextRates;
     }
   }
 
@@ -58,5 +66,5 @@ export function simulate(state: SimState, seconds: number): SimResult {
     },
     modes,
   };
-  return { ...next, essenceRates: computeEssenceRates(next), essenceGained: gained };
+  return { ...next, essenceRates: computeEssenceRates(next, rates), essenceGained: gained };
 }

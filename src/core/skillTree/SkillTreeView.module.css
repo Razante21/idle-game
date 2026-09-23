@@ -109,9 +109,16 @@
   font-variant-numeric: tabular-nums;
 }
 
+.reqs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+
 .reqMet,
 .reqUnmet {
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 
 .reqMet {

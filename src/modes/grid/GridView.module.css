@@ -1,0 +1,69 @@
+.grid {
+  display: grid;
+  gap: 6px;
+  max-width: 420px;
+  margin: 0 auto 12px;
+}
+
+.cell {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.empty {
+  background: color-mix(in srgb, var(--surface-2) 50%, transparent);
+  border-style: dashed;
+}
+
+.symbol {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.out {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.ana {
+  color: #fff4c2;
+}
+
+.nebulosa {
+  color: #9fd8ff;
+}
+
+.gigante {
+  color: #ff9a76;
+}
+
+.pulsar {
+  color: #b7a2ff;
+}
+
+.farolNucleo {
+  color: var(--accent);
+}
+
+.farolFabrica {
+  color: #ffc857;
+}
+
+.farolExpedicao {
+  color: #ff7a9c;
+}

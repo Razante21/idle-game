@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ModeContext } from '../../core/types';
+import { makeCtx } from '../../test/makeCtx';
 import {
   bulkCost,
   buyGenerator,
@@ -13,7 +13,7 @@ import {
   tick,
 } from './logic';
 
-const noMult: ModeContext = { multiplier: () => 1 };
+const noMult = makeCtx();
 
 describe('baseClicker logic', () => {
   it('bulk cost equals the sum of individual costs', () => {
@@ -44,10 +44,17 @@ describe('baseClicker logic', () => {
 
   it('ticks production and applies multipliers', () => {
     const state = { ...initialBaseClickerState, owned: [10, 0, 0, 0, 0, 0] };
-    const doubled: ModeContext = { multiplier: (s) => (s === 'production' ? 2 : 1) };
+    const doubled = makeCtx({ mult: { production: 2 } });
     expect(productionPerSecond(state, doubled)).toBe(10);
     expect(tick(state, 2, doubled).energy).toBe(20);
     expect(essenceRate(state, doubled)).toBeCloseTo(Math.sqrt(10) / 10);
+  });
+
+  it('applies Ascensão rules: milestone every 20 and auto-click', () => {
+    const state = { ...initialBaseClickerState, owned: [20, 0, 0, 0, 0, 0] };
+    expect(productionPerSecond(state, makeCtx({ flags: ['nucleo.milestone20'] }))).toBe(20);
+    const idle = tick(initialBaseClickerState, 1, makeCtx({ flags: ['nucleo.autoclick'] }));
+    expect(idle.energy).toBe(5);
   });
 
   it('click grants at least 1 energy', () => {

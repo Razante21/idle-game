@@ -1,6 +1,6 @@
 import type { GameMode } from '../../core/types';
 import { BaseClickerView } from './BaseClickerView';
-import { essenceRate, initialBaseClickerState, restore, tick, type BaseClickerState } from './logic';
+import { essenceRate, initialBaseClickerState, provides, restore, tick, type BaseClickerState } from './logic';
 
 export const baseClickerMode: GameMode<BaseClickerState> = {
   id: 'baseClicker',
@@ -12,6 +12,7 @@ export const baseClickerMode: GameMode<BaseClickerState> = {
   unlockDescription: 'Disponível desde o início',
   tick,
   essenceRate,
+  provides,
   restore,
   Component: BaseClickerView,
 };

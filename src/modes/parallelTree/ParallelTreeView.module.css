@@ -1,0 +1,81 @@
+.tier {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tierLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.choices {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.choiceWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.or {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.node {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  height: 100%;
+  padding: 12px;
+  text-align: left;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.node:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.footer {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--essence);
+}
+
+.purchased {
+  border-color: var(--essence);
+  background: var(--essence-soft);
+}
+
+.available {
+  border-color: var(--essence);
+  box-shadow: 0 0 14px var(--essence-glow);
+}
+
+.node.unaffordable {
+  opacity: 0.8;
+}
+
+.node.excluded,
+.node.locked {
+  opacity: 0.4;
+}
+
+@media (max-width: 520px) {
+  .choices {
+    flex-direction: column;
+  }
+}

@@ -1,4 +1,4 @@
-import type { ModeContext } from '../../core/types';
+import type { ModeBonus, ModeContext } from '../../core/types';
 
 export interface GeneratorDef {
   name: string;
@@ -54,17 +54,27 @@ export function maxAffordable(index: number, owned: number, energy: number): num
   return bulkCost(index, owned, n) > energy ? n - 1 : n;
 }
 
-export function milestoneMultiplier(owned: number): number {
-  return 2 ** Math.floor(owned / MILESTONE_EVERY);
+const MILESTONE_EVERY_ASCENDED = 20;
+const AUTO_CLICKS_PER_SECOND = 5;
+
+export function milestoneEvery(ctx: ModeContext): number {
+  return ctx.hasFlag('nucleo.milestone20') ? MILESTONE_EVERY_ASCENDED : MILESTONE_EVERY;
 }
 
-export function generatorRate(index: number, owned: number): number {
-  return def(index).baseRate * owned * milestoneMultiplier(owned);
+export function milestoneMultiplier(owned: number, every = MILESTONE_EVERY): number {
+  return 2 ** Math.floor(owned / every);
+}
+
+export function generatorRate(index: number, owned: number, every = MILESTONE_EVERY): number {
+  return def(index).baseRate * owned * milestoneMultiplier(owned, every);
+}
+
+function rawProduction(state: BaseClickerState, every = MILESTONE_EVERY): number {
+  return state.owned.reduce((sum, owned, i) => sum + generatorRate(i, owned, every), 0);
 }
 
 export function productionPerSecond(state: BaseClickerState, ctx: ModeContext): number {
-  const raw = state.owned.reduce((sum, owned, i) => sum + generatorRate(i, owned), 0);
-  return raw * ctx.multiplier('production');
+  return rawProduction(state, milestoneEvery(ctx)) * ctx.multiplier('production');
 }
 
 export function clickValue(state: BaseClickerState, ctx: ModeContext): number {
@@ -76,9 +86,23 @@ export function essenceRate(state: BaseClickerState, ctx: ModeContext): number {
 }
 
 export function tick(state: BaseClickerState, deltaSeconds: number, ctx: ModeContext): BaseClickerState {
-  const gained = productionPerSecond(state, ctx) * deltaSeconds;
+  let perSecond = productionPerSecond(state, ctx);
+  if (ctx.hasFlag('nucleo.autoclick')) perSecond += clickValue(state, ctx) * AUTO_CLICKS_PER_SECOND;
+  const gained = perSecond * deltaSeconds;
   if (gained === 0) return state;
   return { ...state, energy: state.energy + gained, totalEnergy: state.totalEnergy + gained };
+}
+
+/** A energia do Núcleo acelera as máquinas da Fábrica. */
+export function provides(state: BaseClickerState): ModeBonus[] {
+  return [
+    {
+      target: 'productionChain',
+      stat: 'production',
+      value: 1 + Math.log10(1 + rawProduction(state)) / 5,
+      source: 'Energia do Núcleo',
+    },
+  ];
 }
 
 export function click(state: BaseClickerState, ctx: ModeContext): BaseClickerState {

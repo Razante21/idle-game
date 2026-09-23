@@ -2,13 +2,13 @@ import { formatNumber } from '../../core/format';
 import type { ModeViewProps } from '../../core/types';
 import {
   GENERATORS,
-  MILESTONE_EVERY,
   bulkCost,
   buyGenerator,
   click,
   clickValue,
   generatorRate,
   maxAffordable,
+  milestoneEvery,
   productionPerSecond,
   type BaseClickerState,
 } from './logic';
@@ -17,6 +17,7 @@ import styles from './BaseClickerView.module.css';
 export function BaseClickerView({ state, ctx, essenceRate, update }: ModeViewProps<BaseClickerState>) {
   const production = productionPerSecond(state, ctx);
   const productionMult = ctx.multiplier('production');
+  const every = milestoneEvery(ctx);
 
   return (
     <div className={styles.root}>
@@ -31,6 +32,7 @@ export function BaseClickerView({ state, ctx, essenceRate, update }: ModeViewPro
         <p className={styles.link}>
           O Núcleo alimenta a rede com <strong>{formatNumber(essenceRate)}</strong> Essência/s
         </p>
+        {ctx.hasFlag('nucleo.autoclick') && <p className={styles.link}>Mãos Invisíveis: 5 cliques/s automáticos</p>}
       </section>
 
       <section className={styles.generators}>
@@ -48,7 +50,7 @@ export function BaseClickerView({ state, ctx, essenceRate, update }: ModeViewPro
           }
           const cost = bulkCost(i, owned, 1);
           const max = maxAffordable(i, owned, state.energy);
-          const toMilestone = MILESTONE_EVERY - (owned % MILESTONE_EVERY);
+          const toMilestone = every - (owned % every);
           return (
             <div key={g.name} className={styles.generator}>
               <div className={styles.genInfo}>
@@ -56,7 +58,7 @@ export function BaseClickerView({ state, ctx, essenceRate, update }: ModeViewPro
                   {g.name} <span className={styles.owned}>x{owned}</span>
                 </div>
                 <div className={styles.muted}>
-                  {formatNumber(generatorRate(i, owned) * productionMult)}/s · dobra em {toMilestone}
+                  {formatNumber(generatorRate(i, owned, every) * productionMult)}/s · dobra em {toMilestone}
                 </div>
               </div>
               <div className={styles.genButtons}>
