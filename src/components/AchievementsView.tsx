@@ -3,7 +3,17 @@ import { useGameStore } from '../core/store/gameStore';
 import { Modal } from './Modal';
 import styles from './AchievementsView.module.css';
 
-const CATEGORIES: AchievementCategory[] = ['Núcleo', 'Fábrica', 'Constelação', 'Expedição', 'Ascensão', 'Rede', 'Cosmos'];
+const CATEGORIES: AchievementCategory[] = [
+  'Núcleo',
+  'Fábrica',
+  'Constelação',
+  'Expedição',
+  'Ascensão',
+  'Jardim',
+  'Colônia',
+  'Rede',
+  'Cosmos',
+];
 
 export function AchievementsView({ onClose }: { onClose(): void }) {
   const done = new Set(useGameStore((s) => s.meta.achievements));

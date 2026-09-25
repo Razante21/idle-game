@@ -2,6 +2,7 @@ import { isModeUnlockedByTree } from '../../core/skillTree/logic';
 import type { GameMode } from '../../core/types';
 import {
   essenceRate,
+  exports,
   initialProductionChainState,
   onCollapse,
   provides,
@@ -22,6 +23,7 @@ export const productionChainMode: GameMode<ProductionChainState> = {
   tick,
   essenceRate,
   provides,
+  exports,
   onCollapse,
   restore,
   Component: ProductionChainView,

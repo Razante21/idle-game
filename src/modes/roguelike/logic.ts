@@ -1,5 +1,5 @@
 import { createRng, validSeed, type Rng } from '../../core/rng';
-import type { ModeBonus, ModeContext, ModeId, Stat } from '../../core/types';
+import type { Goods, ModeBonus, ModeContext, ModeId, Stat } from '../../core/types';
 
 export type RoomKind = 'combate' | 'elite' | 'tesouro' | 'descanso' | 'evento' | 'loja' | 'chefe';
 export type RelicId =
@@ -493,6 +493,11 @@ export function provides(state: RoguelikeState): ModeBonus[] {
     ...relicBonuses,
     { target: 'grid', stat: 'production', value: 1 + 0.02 * state.bestDepth, source: 'Mapas da Expedição' },
   ];
+}
+
+/** O andar mais fundo já alcançado: o Jardim usa para liberar sementes raras. */
+export function exports(state: RoguelikeState): Partial<Goods> {
+  return { profundidade: state.bestDepth };
 }
 
 /** Colapso: a jornada recomeça, mas relíquias, classes e melhorias permanentes continuam. */

@@ -18,9 +18,10 @@ export const COLLAPSE_REQUIRED_NODE = 'harmonia';
 const BASE_OFFLINE_HOURS = 24;
 const SINGULARITY_BONUS = 0.1;
 
-const PORTALS: Record<'portais1' | 'portais2', string[]> = {
+const PORTALS: Record<'portais1' | 'portais2' | 'portais3', string[]> = {
   portais1: ['unlock_productionChain', 'unlock_grid'],
   portais2: ['unlock_roguelike', 'unlock_parallelTree'],
+  portais3: ['unlock_garden', 'unlock_colony'],
 };
 
 function effects(cosmos: CosmosState): CosmosEffect[] {
@@ -117,7 +118,7 @@ export function collapse(state: SimState, nextAnomaly: AnomalyId | null = null):
     anomaly: nextAnomaly && anomaliesUnlocked(meta.cosmos) && !meta.cosmos.anomaliesDone.includes(nextAnomaly) ? nextAnomaly : null,
   };
   const keep = keeps(cosmos);
-  const purchasedNodes = [...(keep.has('portais1') ? PORTALS.portais1 : []), ...(keep.has('portais2') ? PORTALS.portais2 : [])];
+  const purchasedNodes = (['portais1', 'portais2', 'portais3'] as const).flatMap((k) => (keep.has(k) ? PORTALS[k] : []));
   return {
     meta: {
       ...meta,

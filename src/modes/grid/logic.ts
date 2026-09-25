@@ -1,6 +1,6 @@
 import { logSquared } from '../../core/curves';
 import { createRng, validSeed } from '../../core/rng';
-import type { ModeBonus, ModeContext, ModeId } from '../../core/types';
+import type { Goods, ModeBonus, ModeContext, ModeId } from '../../core/types';
 
 export type PieceType =
   | 'ana'
@@ -442,6 +442,11 @@ export function essenceRate(state: GridState, ctx: ModeContext): number {
   const { dust, absorbed } = gridTotals(state, ctx.hasFlag('constelacao.diagonal'));
   const mult = ctx.multiplier('production');
   return logSquared(dust * mult, 2) + logSquared(absorbed * mult, 1.5);
+}
+
+/** A poeira bruta vira a luz que ilumina a Colônia e faz o Jardim crescer. */
+export function exports(state: GridState): Partial<Goods> {
+  return { luz: rawDustPerSecond(state) };
 }
 
 /** Colapso: o céu recomeça; a Memória Estelar guarda os padrões descobertos. */

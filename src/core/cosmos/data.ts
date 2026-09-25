@@ -1,7 +1,7 @@
 import type { AnomalyId, Flag, ModeId, Stat } from '../types';
 
 /** O que a Cosmologia preserva no Colapso. Cada modo lê as chaves que conhece em `onCollapse`. */
-export type KeepKey = 'portais1' | 'portais2' | 'pesquisas' | 'padroes' | 'carga' | 'ascensao';
+export type KeepKey = 'portais1' | 'portais2' | 'portais3' | 'pesquisas' | 'padroes' | 'carga' | 'ascensao' | 'sementes' | 'leis';
 
 export type CosmosEffect =
   | { type: 'multiplier'; target: ModeId | 'global'; stat: Stat; value: number }
@@ -178,6 +178,33 @@ export const COSMOLOGY: CosmosNode[] = [
       { type: 'multiplier', target: 'global', stat: 'production', value: 10 },
     ],
     position: { col: 2, row: 5 },
+  },
+  {
+    id: 'raizesEternas',
+    name: 'Raízes Eternas',
+    description: 'Começa cada ciclo também com o Jardim e a Colônia abertos',
+    cost: 8,
+    parents: ['portaisEternos'],
+    effects: [{ type: 'keep', key: 'portais3' }],
+    position: { col: 0, row: 5 },
+  },
+  {
+    id: 'bancoSementes',
+    name: 'Banco de Sementes',
+    description: 'As espécies descobertas no Jardim sobrevivem ao Colapso',
+    cost: 5,
+    parents: ['ecoAscendente'],
+    effects: [{ type: 'keep', key: 'sementes' }],
+    position: { col: 1, row: 5 },
+  },
+  {
+    id: 'constituicao',
+    name: 'Constituição',
+    description: 'As leis da Colônia sobrevivem ao Colapso',
+    cost: 5,
+    parents: ['arquitetoAuto'],
+    effects: [{ type: 'keep', key: 'leis' }],
+    position: { col: 4, row: 5 },
   },
 ];
 

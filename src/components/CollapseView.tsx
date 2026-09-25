@@ -23,10 +23,13 @@ type Tab = 'colapso' | 'cosmologia' | 'anomalias';
 const KEEP_LABELS: Record<string, string> = {
   portais1: 'Portais da Fábrica e da Constelação',
   portais2: 'Portais da Expedição e da Ascensão',
+  portais3: 'Portais do Jardim e da Colônia',
   pesquisas: 'Pesquisas da Fábrica',
   padroes: 'Padrões da Constelação',
   carga: '60% da Carga (em vez de 25%)',
   ascensao: 'Caminhos da Ascensão',
+  sementes: 'Espécies do Jardim',
+  leis: 'Leis da Colônia',
 };
 
 export function CollapseView({ onClose }: { onClose(): void }) {

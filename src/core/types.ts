@@ -1,6 +1,13 @@
 import type { ComponentType } from 'react';
 
-export type ModeId = 'baseClicker' | 'productionChain' | 'grid' | 'roguelike' | 'parallelTree';
+export type ModeId = 'baseClicker' | 'productionChain' | 'grid' | 'roguelike' | 'parallelTree' | 'garden' | 'colony';
+
+/**
+ * Bens que um modo exporta para os outros. São fluxos por segundo (comida, materiais, luz)
+ * ou marcos (profundidade); quem importa lê a soma do que os outros modos exportam.
+ */
+export type Good = 'comida' | 'materiais' | 'luz' | 'profundidade';
+export type Goods = Record<Good, number>;
 
 export type Stat = 'production' | 'click' | 'essence';
 
@@ -67,6 +74,8 @@ export interface ModeContext {
   hasFlag(flag: Flag): boolean;
   /** Essência/s de cada modo no passo anterior (somente leitura). */
   essenceRates: Readonly<EssenceRates>;
+  /** Soma do que os outros modos desbloqueados exportam agora. */
+  imports: Readonly<Goods>;
 }
 
 export interface ModeViewProps<TState> {
@@ -90,6 +99,8 @@ export interface GameMode<TState> {
   /** Bônus que este modo concede aos outros enquanto estiver desbloqueado. */
   provides?(state: TState): ModeBonus[];
   flags?(state: TState): Flag[];
+  /** Bens que este modo entrega aos outros; lidos por eles em `ctx.imports`. */
+  exports?(state: TState): Partial<Goods>;
   /** Estado depois de um Colapso; o padrão é voltar ao initialState. `keeps` diz o que a Cosmologia preserva. */
   onCollapse?(state: TState, keeps: ReadonlySet<string>): TState;
   /** Reconstrói o estado a partir de um save antigo; o padrão é mesclar sobre o initialState. */
