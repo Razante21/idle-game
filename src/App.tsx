@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AchievementsView } from './components/AchievementsView';
+import { LoreView } from './components/LoreView';
 import { MenuView } from './components/MenuView';
+import { TutorialView } from './components/TutorialView';
 import { CollapseView } from './components/CollapseView';
 import { ANOMALIES } from './core/cosmos/data';
 import { ModeLinks } from './components/ModeLinks';
 import { ModeSelectorBar } from './components/ModeSelectorBar';
 import { ResourceHUD } from './components/ResourceHUD';
 import { ACHIEVEMENTS } from './core/achievements';
+import { weeklyEventsUnlocked } from './core/cosmos/logic';
+import { currentWeeklyEvent } from './core/weeklyEvent';
 import { bonusesFor, buildContexts, collectBonuses } from './core/engine/contexts';
 import { saveGame } from './core/engine/persistence';
 import { startTickLoop } from './core/engine/tickLoop';
@@ -18,6 +22,7 @@ import styles from './App.module.css';
 
 const AUTOSAVE_MS = 10_000;
 const TOAST_MS = 3_500;
+const TUTORIAL_SEEN_KEY = 'nexus-idle-tutorial-seen';
 
 export interface WelcomeReport {
   elapsedSeconds: number;
@@ -33,6 +38,14 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [collapseOpen, setCollapseOpen] = useState(false);
+  const [loreOpen, setLoreOpen] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(() => {
+    try {
+      return localStorage.getItem(TUTORIAL_SEEN_KEY) !== '1';
+    } catch {
+      return false;
+    }
+  });
   const [welcomeReport, setWelcomeReport] = useState(welcome);
   const toastId = useGameStore((s) => s.toasts[0]);
   const toast = toastId ? ACHIEVEMENTS.find((x) => x.id === toastId) : undefined;
@@ -83,9 +96,18 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
         onOpenAchievements={() => setAchievementsOpen(true)}
         onOpenMenu={() => setMenuOpen(true)}
         onOpenCollapse={() => setCollapseOpen(true)}
+        onOpenLore={() => setLoreOpen(true)}
+        onOpenTutorial={() => setTutorialOpen(true)}
       />
 
       <main className={styles.main}>
+        {weeklyEventsUnlocked(meta.cosmos) && (
+          <div className={styles.weekly} role="status">
+            <span>
+              <strong>Evento da semana: {currentWeeklyEvent().name}</strong> · {currentWeeklyEvent().description}
+            </span>
+          </div>
+        )}
         {meta.cosmos.anomaly && (
           <div className={styles.anomaly} role="status">
             <span>
@@ -119,6 +141,19 @@ export function App({ welcome }: { welcome: WelcomeReport | null }) {
       {achievementsOpen && <AchievementsView onClose={() => setAchievementsOpen(false)} />}
       {menuOpen && <MenuView onClose={() => setMenuOpen(false)} />}
       {collapseOpen && <CollapseView onClose={() => setCollapseOpen(false)} />}
+      {loreOpen && <LoreView onClose={() => setLoreOpen(false)} />}
+      {tutorialOpen && (
+        <TutorialView
+          onClose={() => {
+            setTutorialOpen(false);
+            try {
+              localStorage.setItem(TUTORIAL_SEEN_KEY, '1');
+            } catch {
+              // Armazenamento indisponível: o tutorial volta a aparecer na próxima visita, sem problema.
+            }
+          }}
+        />
+      )}
 
       {toast && (
         <div className={styles.toast} role="status">

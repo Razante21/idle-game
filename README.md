@@ -16,9 +16,10 @@ um novo abre.
 | Ascensão | Segunda árvore movida a Éter, com 8 níveis de caminhos exclusivos | O Éter vem de todos os modos; os caminhos mudam as regras dos outros |
 | Jardim | Cultivo num canteiro: cruze duas plantas vizinhas para mutar espécies novas, incluindo sementes raras que só brotam com profundidade da Expedição | Exporta Comida; o Pólen fortalece o Núcleo e a Expedição |
 | Colônia | Uma cidade que vive do que os outros modos exportam — Comida do Jardim, Materiais da Fábrica, Luz da Constelação — e produz Influência e leis | A mão de obra fortalece a Fábrica; os jardineiros, o Jardim |
+| O Vazio | Só abre depois do primeiro Colapso: fendas de entropia se abrem sozinhas e drenam a produção de todos os modos até serem seladas por Matéria Escura | Melhorias permanentes fortalecem a produção e a Essência de todos os modos, mesmo depois do próximo Colapso |
 
 A Árvore principal tem 37 nós, e os mais fundos exigem que vários modos continuem produzindo ao mesmo
-tempo. Há também 62 conquistas, cada uma com +2% de Essência para toda a rede.
+tempo. Há também 67 conquistas, cada uma com +2% de Essência para toda a rede.
 
 ### Exportações entre modos
 
@@ -35,8 +36,25 @@ Depois de comprar "Harmonia" na Árvore, o **Colapso** reinicia a Essência, a �
 troca de **Singularidades**, gastas numa segunda árvore permanente (a **Cosmologia**) que sobrevive
 para sempre. Cada Singularidade conquistada também dá +10% de Essência para sempre. A Cosmologia
 pode manter portais, pesquisas e padrões entre ciclos, dar Essência inicial, aumentar o teto de
-progresso offline e liberar **Anomalias**: ciclos com uma regra extra difícil e uma recompensa
-permanente ao vencer.
+progresso offline, liberar **Anomalias** (ciclos com uma regra extra difícil e uma recompensa
+permanente ao vencer) e liberar o **Evento Semanal**: a cada 7 dias (semana ISO), um modo diferente
+ganha um bônus temporário — sempre o mesmo modo durante toda a semana, e a rotação é a mesma para
+todo mundo.
+
+### O Vazio
+
+O primeiro Colapso libera **O Vazio**, a única camada da Rede que nunca reseta — nem no próximo
+Colapso. Fendas se abrem sozinhas e drenam a produção de todos os modos; selá-las (gastando Foco,
+gerado passivamente) rende **Matéria Escura**, gasta em 5 melhorias permanentes. Uma fenda ignorada
+por tempo demais endurece (fica mais cara de selar), mas o endurecimento tem um teto — sem ele o
+custo cresceria exponencialmente enquanto o Foco só cresce de forma linear, e a fenda nunca mais
+poderia ser selada.
+
+### Diário do Arquiteto e tutorial
+
+Um diário (`📖` no topo, quando a primeira entrada é revelada) mostra fragmentos de lore
+desbloqueados por marcos da jornada — do primeiro clique ao fim da Cosmologia. Um tutorial rápido
+(`?` no topo) explica o loop principal e aparece sozinho na primeira visita.
 
 ## Rodando
 
@@ -56,7 +74,8 @@ um pouco mais devagar. Metas atuais medidas por ele: portal da Fábrica em ~15 m
 (nó "Harmonia") por volta de 87h.
 
 O progresso é salvo no `localStorage` do navegador, com progresso offline de até 24h (48h com o nó
-"Sono Profundo" da Cosmologia).
+"Sono Profundo" da Cosmologia). O jogo também é um PWA instalável: funciona offline depois da
+primeira visita, graças a um service worker simples (`public/sw.js`).
 
 ## Adicionando um modo
 

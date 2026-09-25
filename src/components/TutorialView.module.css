@@ -1,0 +1,27 @@
+.step {
+  min-height: 140px;
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin: 14px 0;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+
+.dotActive {
+  background: var(--accent);
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Nexus Idle",
+  "short_name": "Nexus Idle",
+  "description": "Idle game de navegador com vários modos de jogo ligados por uma progressão central.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0e1a",
+  "theme_color": "#0b0e1a",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

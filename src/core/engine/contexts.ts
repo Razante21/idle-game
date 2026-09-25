@@ -1,6 +1,7 @@
 import { achievementMultiplier } from '../achievements';
 import { addGoods, noGoods } from '../goods';
-import { cosmosBonuses, cosmosFlags, linksDisabled } from '../cosmos/logic';
+import { cosmosBonuses, cosmosFlags, linksDisabled, weeklyEventsUnlocked } from '../cosmos/logic';
+import { weeklyEventBonus } from '../weeklyEvent';
 import { MODES } from '../modeRegistry';
 import { getMultiplier } from '../skillTree/logic';
 import type { EssenceRates, Flag, Goods, MetaState, ModeBonus, ModeContext, ModeId, ModeStates } from '../types';
@@ -12,6 +13,7 @@ export function unlockedModes(meta: MetaState) {
 export function collectBonuses(meta: MetaState, modes: ModeStates): ModeBonus[] {
   const bonuses = linksDisabled(meta.cosmos) ? [] : unlockedModes(meta).flatMap((m) => m.provides?.(modes[m.id]) ?? []);
   bonuses.push(...cosmosBonuses(meta.cosmos));
+  if (weeklyEventsUnlocked(meta.cosmos)) bonuses.push(weeklyEventBonus());
   if (meta.achievements.length > 0) {
     bonuses.push({
       target: 'global',

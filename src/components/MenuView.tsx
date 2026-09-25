@@ -12,6 +12,7 @@ import { PATTERN_IDS, type GridState } from '../modes/grid/logic';
 import type { ParallelTreeState } from '../modes/parallelTree/logic';
 import type { ProductionChainState } from '../modes/productionChain/logic';
 import { RELIC_IDS, type RoguelikeState } from '../modes/roguelike/logic';
+import { VAZIO_UPGRADE_IDS, type VazioState } from '../modes/vazio/logic';
 import { Modal } from './Modal';
 import { Tabs } from './Tabs';
 import s from '../modes/shared.module.css';
@@ -36,6 +37,7 @@ function Stats() {
   const g = modes.grid as GridState;
   const e = modes.roguelike as RoguelikeState;
   const a = modes.parallelTree as ParallelTreeState;
+  const v = modes.vazio as VazioState;
   const unlocked = MODES.filter((mode) => mode.isUnlocked(meta)).length;
 
   return (
@@ -81,6 +83,12 @@ function Stats() {
         <h3 className={s.sectionTitle}>❖ Ascensão</h3>
         <Stat label="Éter total" value={formatNumber(a.totalEther)} />
         <Stat label="Caminhos escolhidos" value={a.nodes.length} />
+      </section>
+      <section className={s.panel}>
+        <h3 className={s.sectionTitle}>◈ O Vazio</h3>
+        <Stat label="Matéria Escura total" value={formatNumber(v.totalDarkMatter)} />
+        <Stat label="Fendas seladas" value={v.sealed} />
+        <Stat label="Melhorias" value={`${VAZIO_UPGRADE_IDS.reduce((sum, id) => sum + (v.upgrades[id] > 0 ? 1 : 0), 0)}/${VAZIO_UPGRADE_IDS.length}`} />
       </section>
     </div>
   );

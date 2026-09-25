@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Tabs } from '../../components/Tabs';
+import { playSound } from '../../core/sound';
 import { formatNumber } from '../../core/format';
 import type { ModeViewProps } from '../../core/types';
 import s from '../shared.module.css';
@@ -64,7 +65,13 @@ export function BaseClickerView({ state, ctx, essenceRate, update }: ModeViewPro
             SURTO x{SURGE_MULT} · {Math.ceil(state.surge.activeLeft)}s
           </div>
         )}
-        <button className={styles.coreButton} onClick={() => update((x) => click(x, ctx))}>
+        <button
+          className={styles.coreButton}
+          onClick={() => {
+            playSound('click');
+            update((x) => click(x, ctx));
+          }}
+        >
           <span className={styles.coreButtonTitle}>Canalizar</span>
           <span className={styles.coreButtonValue}>+{formatNumber(clickValue(state, ctx))}</span>
         </button>

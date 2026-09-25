@@ -10,7 +10,8 @@ export type CosmosEffect =
   | { type: 'startEssence'; amount: number }
   | { type: 'offlineHours'; hours: number }
   | { type: 'autoTree' }
-  | { type: 'unlockAnomalies' };
+  | { type: 'unlockAnomalies' }
+  | { type: 'weeklyEvents' };
 
 export interface CosmosNode {
   id: string;
@@ -94,6 +95,15 @@ export const COSMOLOGY: CosmosNode[] = [
     parents: ['semente'],
     effects: [{ type: 'unlockAnomalies' }],
     position: { col: 3, row: 3 },
+  },
+  {
+    id: 'ecosSazonais',
+    name: 'Ecos Sazonais',
+    description: 'Libera o Evento Semanal: todo ciclo de 7 dias, um modo diferente ganha um bônus temporário',
+    cost: 5,
+    parents: ['fissuras'],
+    effects: [{ type: 'weeklyEvents' }],
+    position: { col: 3, row: 4 },
   },
   {
     id: 'memoriaEstelar',
