@@ -13,6 +13,8 @@ import { SKILL_TREE } from '../core/skillTree/treeData';
 import type { EssenceRates, ModeContext, ModeId } from '../core/types';
 import * as nucleo from '../modes/baseClicker/logic';
 import { GENERATORS, UPGRADES } from '../modes/baseClicker/upgrades';
+import * as col from '../modes/colony/logic';
+import * as gar from '../modes/garden/logic';
 import * as grid from '../modes/grid/logic';
 import * as asc from '../modes/parallelTree/logic';
 import * as fab from '../modes/productionChain/logic';
@@ -36,7 +38,17 @@ export interface BotReport {
 }
 
 const DEFAULTS: BotOptions = { hours: 48, clicksPerSecond: 3, decisionEvery: 1, collapseAtGain: 6 };
-const KEY_NODES = new Set(['unlock_productionChain', 'unlock_grid', 'unlock_roguelike', 'unlock_parallelTree', 'harmonia', 'singularidade', 'omega']);
+const KEY_NODES = new Set([
+  'unlock_productionChain',
+  'unlock_grid',
+  'unlock_roguelike',
+  'unlock_parallelTree',
+  'unlock_garden',
+  'unlock_colony',
+  'harmonia',
+  'singularidade',
+  'omega',
+]);
 
 type Modes = SimState['modes'];
 
@@ -168,6 +180,72 @@ function playAscensao(s: asc.ParallelTreeState): asc.ParallelTreeState {
   return next;
 }
 
+/** Valor de uma espécie para o robô: seiva/s mais metade da comida/s (a Colônia precisa dela). */
+function speciesScore(id: gar.SpeciesId): number {
+  const d = gar.SPECIES[id];
+  return (d.seiva + 0.5 * d.comida) / d.growTime;
+}
+
+function playGarden(s: gar.GardenState, ctx: ModeContext): gar.GardenState {
+  let next = s;
+  const cost = gar.expandCost(next);
+  if (cost !== null && next.seiva >= cost) next = gar.expand(next);
+  for (;;) {
+    const cheapest = gar.GARDEN_UPGRADE_IDS.filter((id) => next.upgrades[id] < gar.GARDEN_UPGRADES[id].max).sort(
+      (a, b) => gar.upgradeCost(next, a) - gar.upgradeCost(next, b),
+    )[0];
+    if (!cheapest || gar.upgradeCost(next, cheapest) > next.seiva * 0.5) break;
+    next = gar.buyUpgrade(next, cheapest);
+  }
+
+  // Canteiros 0-1-2: berçário para a próxima espécie ainda não descoberta.
+  const target = gar.SPECIES_IDS.find((id) => {
+    const d = gar.SPECIES[id];
+    return (
+      !next.discovered.includes(id) &&
+      d.recipe !== undefined &&
+      d.recipe.every((p) => next.discovered.includes(p)) &&
+      (d.depth ?? 0) <= ctx.imports.profundidade
+    );
+  });
+  const reserved = new Set<number>();
+  if (target) {
+    const [a, b] = gar.SPECIES[target].recipe!;
+    next = gar.plant(next, 0, a);
+    next = gar.plant(next, 2, b);
+    if (next.plots[1]) next = gar.uproot(next, 1);
+    reserved.add(0).add(1).add(2);
+  }
+
+  const best = [...next.discovered].sort((a, b) => speciesScore(b) - speciesScore(a));
+  next.plots.forEach((p, i) => {
+    if (reserved.has(i)) return;
+    const pick = best.find((id) => gar.SPECIES[id].plantCost <= next.seiva * 0.5);
+    if (pick && (!p || speciesScore(pick) > speciesScore(p.species))) next = gar.plant(next, i, pick);
+  });
+  return next;
+}
+
+function playColony(s: col.ColonyState, ctx: ModeContext): col.ColonyState {
+  let next = s;
+  for (const id of [...col.LAW_IDS].sort((a, b) => col.LAWS[a].cost - col.LAWS[b].cost)) next = col.enact(next, id);
+  if (next.population >= col.housing(next) * 0.9) next = col.build(next, 'casa');
+  for (const id of ['celeiro', 'oficina', 'biblioteca'] as col.BuildingId[]) {
+    if (col.buildingCost(next, id) <= next.materiais * 0.3) next = col.build(next, id);
+  }
+  next = col.build(next, 'monumento');
+  if (col.hasLaw(next, 'conselho')) return next;
+
+  // Sem o Conselho, redistribui: agricultores suficientes para a comida, o resto 2:1 entre artesãos e estudiosos.
+  const people = Math.floor(next.population);
+  const r = col.rates(next, ctx);
+  const perFarmer = next.jobs.agricultor > 0 ? r.foodLocal / next.jobs.agricultor : 0.3 * ctx.multiplier('production');
+  const farmers = Math.min(people, Math.ceil(Math.max(0, r.foodNeed * 1.1 - r.foodImported) / perFarmer));
+  const rest = people - farmers;
+  const scholars = Math.floor(rest / 3);
+  return { ...next, jobs: { agricultor: farmers, artesao: rest - scholars, estudioso: scholars } };
+}
+
 export function runBot(options: Partial<BotOptions> = {}): BotReport {
   const opts = { ...DEFAULTS, ...options };
   let state: SimState = {
@@ -192,6 +270,8 @@ export function runBot(options: Partial<BotOptions> = {}): BotReport {
     if (has('grid')) modes.grid = playGrid(modes.grid as grid.GridState, ctx.grid, step);
     if (has('roguelike') && step % 2 === 0) modes.roguelike = playExpedicao(modes.roguelike as exp.RoguelikeState, ctx.roguelike);
     if (has('parallelTree')) modes.parallelTree = playAscensao(modes.parallelTree as asc.ParallelTreeState);
+    if (has('garden')) modes.garden = playGarden(modes.garden as gar.GardenState, ctx.garden);
+    if (has('colony') && step % 5 === 0) modes.colony = playColony(modes.colony as col.ColonyState, ctx.colony);
 
     // Árvore: compra o nó disponível mais barato, repetidamente.
     const cycle = state.meta.cosmos.collapses + 1;
@@ -234,6 +314,11 @@ export function runBot(options: Partial<BotOptions> = {}): BotReport {
     if (e.bestDepth >= 10) mark('Expedição andar 10', t);
     if (e.bestDepth >= 25) mark('Expedição andar 25', t);
     if ((state.modes.parallelTree as asc.ParallelTreeState).nodes.includes('transcendencia')) mark('Transcendência', t);
+    const g = state.modes.garden as gar.GardenState;
+    for (const id of g.discovered) if (gar.SPECIES[id].tier >= 3) mark(`Jardim: ${id}`, t);
+    const c = state.modes.colony as col.ColonyState;
+    if (c.population >= 100) mark('Colônia 100 habitantes', t);
+    if (c.population >= 1000) mark('Colônia 1.000 habitantes', t);
   }
 
   return { milestones, finalEssence: state.meta.totalEssence, finalRates: rates, nodes: state.meta.purchasedNodes.length };

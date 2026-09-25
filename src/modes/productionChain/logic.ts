@@ -1,6 +1,6 @@
 import { logSquared } from '../../core/curves';
 import { createRng, validSeed } from '../../core/rng';
-import type { ModeBonus, ModeContext } from '../../core/types';
+import type { Goods, ModeBonus, ModeContext } from '../../core/types';
 
 export type Resource = 'minerio' | 'lingote' | 'engrenagem' | 'maquina' | 'petroleo' | 'plastico' | 'circuito' | 'robo';
 export type TechId =
@@ -428,6 +428,13 @@ export function provides(state: ProductionChainState): ModeBonus[] {
     });
   }
   return bonuses;
+}
+
+/** Estações de materiais de construção (Fundição, Engrenagens, Plástico): a Colônia recebe o que elas produzem. */
+const MATERIAL_STATIONS = [1, 2, 5];
+
+export function exports(state: ProductionChainState): Partial<Goods> {
+  return { materiais: MATERIAL_STATIONS.reduce((sum, i) => sum + (state.flow[i] ?? 0), 0) };
 }
 
 /** Colapso: a Fábrica recomeça; o Arquivo Industrial guarda as pesquisas. */

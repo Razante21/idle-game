@@ -1,0 +1,42 @@
+.flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+
+.flow span:nth-child(even) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.meter {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
+  margin: 4px 0 8px;
+}
+
+.meterFill {
+  height: 100%;
+  background: var(--accent);
+}
+
+.job {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.job button {
+  width: 30px;
+  padding: 4px 0;
+}
+
+.count {
+  min-width: 36px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}

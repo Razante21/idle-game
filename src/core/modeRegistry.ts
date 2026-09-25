@@ -1,4 +1,6 @@
 import { baseClickerMode } from '../modes/baseClicker';
+import { colonyMode } from '../modes/colony';
+import { gardenMode } from '../modes/garden';
 import { gridMode } from '../modes/grid';
 import { parallelTreeMode } from '../modes/parallelTree';
 import { productionChainMode } from '../modes/productionChain';
@@ -14,6 +16,8 @@ export const MODES: readonly AnyGameMode[] = [
   gridMode,
   roguelikeMode,
   parallelTreeMode,
+  gardenMode,
+  colonyMode,
 ];
 
 const MODES_BY_ID = new Map<ModeId, AnyGameMode>(MODES.map((m) => [m.id, m]));

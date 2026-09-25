@@ -20,7 +20,7 @@ describe('skill tree', () => {
     for (const n of SKILL_TREE) for (const p of n.parents) expect(NODES_BY_ID.has(p)).toBe(true);
     const portals = SKILL_TREE.flatMap((n) => n.effects.filter((e) => e.type === 'unlockMode'));
     expect(portals.map((e) => (e.type === 'unlockMode' ? e.modeId : null)).sort()).toEqual(
-      ['grid', 'parallelTree', 'productionChain', 'roguelike'],
+      ['colony', 'garden', 'grid', 'parallelTree', 'productionChain', 'roguelike'],
     );
   });
 
