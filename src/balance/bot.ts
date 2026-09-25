@@ -16,6 +16,7 @@ import { GENERATORS, UPGRADES } from '../modes/baseClicker/upgrades';
 import * as col from '../modes/colony/logic';
 import * as gar from '../modes/garden/logic';
 import * as grid from '../modes/grid/logic';
+import * as vaz from '../modes/vazio/logic';
 import * as asc from '../modes/parallelTree/logic';
 import * as fab from '../modes/productionChain/logic';
 import * as exp from '../modes/roguelike/logic';
@@ -226,6 +227,18 @@ function playGarden(s: gar.GardenState, ctx: ModeContext): gar.GardenState {
   return next;
 }
 
+function playVazio(s: vaz.VazioState): vaz.VazioState {
+  let next = s;
+  for (const rift of next.rifts) {
+    if (next.foco >= vaz.sealCost(rift)) next = vaz.sealRift(next, rift.id);
+  }
+  const cheapest = vaz.VAZIO_UPGRADE_IDS.filter((id) => next.upgrades[id] < vaz.VAZIO_UPGRADES[id].max).sort(
+    (a, b) => vaz.upgradeCost(next, a) - vaz.upgradeCost(next, b),
+  )[0];
+  if (cheapest && vaz.upgradeCost(next, cheapest) <= next.darkMatter) next = vaz.buyUpgrade(next, cheapest);
+  return next;
+}
+
 function playColony(s: col.ColonyState, ctx: ModeContext): col.ColonyState {
   let next = s;
   for (const id of [...col.LAW_IDS].sort((a, b) => col.LAWS[a].cost - col.LAWS[b].cost)) next = col.enact(next, id);
@@ -271,6 +284,7 @@ export function runBot(options: Partial<BotOptions> = {}): BotReport {
     if (has('roguelike') && step % 2 === 0) modes.roguelike = playExpedicao(modes.roguelike as exp.RoguelikeState, ctx.roguelike);
     if (has('parallelTree')) modes.parallelTree = playAscensao(modes.parallelTree as asc.ParallelTreeState);
     if (has('garden')) modes.garden = playGarden(modes.garden as gar.GardenState, ctx.garden);
+    if (state.meta.cosmos.collapses > 0) modes.vazio = playVazio(modes.vazio as vaz.VazioState);
     if (has('colony') && step % 5 === 0) modes.colony = playColony(modes.colony as col.ColonyState, ctx.colony);
 
     // Árvore: compra o nó disponível mais barato, repetidamente.
@@ -319,6 +333,9 @@ export function runBot(options: Partial<BotOptions> = {}): BotReport {
     const c = state.modes.colony as col.ColonyState;
     if (c.population >= 100) mark('Colônia 100 habitantes', t);
     if (c.population >= 1000) mark('Colônia 1.000 habitantes', t);
+    const vz = state.modes.vazio as vaz.VazioState;
+    if (vz.sealed >= 1) mark('Vazio: primeira fenda selada', t);
+    if (vz.upgrades.nucleoDeSombra >= 1) mark('Vazio: Núcleo de Sombra', t);
   }
 
   return { milestones, finalEssence: state.meta.totalEssence, finalRates: rates, nodes: state.meta.purchasedNodes.length };

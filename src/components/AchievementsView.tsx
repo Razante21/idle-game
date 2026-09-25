@@ -11,6 +11,7 @@ const CATEGORIES: AchievementCategory[] = [
   'Ascensão',
   'Jardim',
   'Colônia',
+  'Vazio',
   'Rede',
   'Cosmos',
 ];

@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 
-export type ModeId = 'baseClicker' | 'productionChain' | 'grid' | 'roguelike' | 'parallelTree' | 'garden' | 'colony';
+export type ModeId = 'baseClicker' | 'productionChain' | 'grid' | 'roguelike' | 'parallelTree' | 'garden' | 'colony' | 'vazio';
 
 /**
  * Bens que um modo exporta para os outros. São fluxos por segundo (comida, materiais, luz)

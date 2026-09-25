@@ -11,6 +11,7 @@ import {
 import { computeEssenceRates, simulate, type SimState } from '../engine/simulate';
 import { initialMeta } from '../meta';
 import { getMode, initialModeStates } from '../modeRegistry';
+import { playSound } from '../sound';
 import { autoBuyNodes, purchaseNode } from '../skillTree/logic';
 import type { AnomalyId, EssenceRates, MetaState, ModeId } from '../types';
 
@@ -52,6 +53,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     let nextMeta = result.meta;
     if (hasAutoTree(nextMeta.cosmos)) nextMeta = completeAnomalyIfReached(autoBuyNodes(nextMeta, result.essenceRates));
     const { meta: withAch, earned } = withAchievements({ meta: nextMeta, modes: result.modes });
+    if (earned.length > 0) playSound('achievement');
     set({
       meta: withAch,
       modes: result.modes,
@@ -74,6 +76,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const { meta, modes, essenceRates } = get();
     const bought = purchaseNode(meta, id, essenceRates);
     if (!bought) return;
+    playSound('buy');
     const nextMeta = completeAnomalyIfReached(bought);
     set({ meta: nextMeta, essenceRates: computeEssenceRates({ meta: nextMeta, modes }, essenceRates) });
   },
@@ -82,6 +85,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const { meta, modes } = get();
     const next = collapse({ meta, modes }, nextAnomaly);
     if (next.meta === meta) return;
+    playSound('collapse');
     set({ ...next, essenceRates: computeEssenceRates(next) });
   },
 
@@ -89,6 +93,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const { meta, modes, essenceRates } = get();
     const cosmos = buyCosmos(meta.cosmos, id);
     if (cosmos === meta.cosmos) return;
+    playSound('buy');
     const nextMeta = { ...meta, cosmos };
     set({ meta: nextMeta, essenceRates: computeEssenceRates({ meta: nextMeta, modes }, essenceRates) });
   },

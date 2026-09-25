@@ -1,4 +1,5 @@
 import { ACHIEVEMENTS } from '../core/achievements';
+import { unlockedLore } from '../core/lore';
 import { COLLAPSE_REQUIRED_NODE, canCollapse, collapseGain } from '../core/cosmos/logic';
 import { formatNumber } from '../core/format';
 import { MODES } from '../core/modeRegistry';
@@ -11,11 +12,15 @@ interface Props {
   onOpenAchievements(): void;
   onOpenMenu(): void;
   onOpenCollapse(): void;
+  onOpenLore(): void;
+  onOpenTutorial(): void;
 }
 
-export function ResourceHUD({ onOpenTree, onOpenAchievements, onOpenMenu, onOpenCollapse }: Props) {
+export function ResourceHUD({ onOpenTree, onOpenAchievements, onOpenMenu, onOpenCollapse, onOpenLore, onOpenTutorial }: Props) {
   const meta = useGameStore((s) => s.meta);
+  const modes = useGameStore((s) => s.modes);
   const rates = useGameStore((s) => s.essenceRates);
+  const loreFound = unlockedLore({ meta, modes }).length;
   const unlocked = MODES.filter((m) => m.isUnlocked(meta));
   const totalRate = unlocked.reduce((sum, m) => sum + rates[m.id], 0);
   const available = countAvailableNodes(meta, rates);
@@ -53,6 +58,14 @@ export function ResourceHUD({ onOpenTree, onOpenAchievements, onOpenMenu, onOpen
         )}
         <button onClick={onOpenAchievements} title="Conquistas">
           ★ {meta.achievements.length}/{ACHIEVEMENTS.length}
+        </button>
+        {loreFound > 0 && (
+          <button className={styles.small} onClick={onOpenLore} title="Diário do Arquiteto">
+            📖 {loreFound}
+          </button>
+        )}
+        <button className={styles.small} onClick={onOpenTutorial} title="Como jogar">
+          ?
         </button>
         <button className={styles.small} onClick={onOpenMenu}>
           ☰ Menu

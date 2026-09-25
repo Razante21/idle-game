@@ -1,0 +1,37 @@
+.rifts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rift {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #5b2a7a;
+  background: color-mix(in srgb, #2a1240 55%, var(--surface));
+}
+
+.meter {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.meterFill {
+  height: 100%;
+  background: #c07bff;
+}
+
+.timeFill {
+  height: 100%;
+  background: #ff7bd0;
+}
+
+.empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}

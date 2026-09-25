@@ -7,6 +7,8 @@ import type { ColonyState } from '../modes/colony/logic';
 import { LAW_IDS } from '../modes/colony/logic';
 import type { GardenState } from '../modes/garden/logic';
 import { SPECIES_IDS } from '../modes/garden/logic';
+import type { VazioState } from '../modes/vazio/logic';
+import { VAZIO_UPGRADE_IDS } from '../modes/vazio/logic';
 import { GENERATORS, UPGRADES } from '../modes/baseClicker/upgrades';
 import type { GridState } from '../modes/grid/logic';
 import { MAX_LEVEL, MAX_SIZE, PATTERN_IDS } from '../modes/grid/logic';
@@ -24,6 +26,7 @@ export type AchievementCategory =
   | 'Ascensão'
   | 'Jardim'
   | 'Colônia'
+  | 'Vazio'
   | 'Rede'
   | 'Cosmos';
 
@@ -44,6 +47,7 @@ const expedicao = (s: SimState) => s.modes.roguelike as RoguelikeState;
 const ascensao = (s: SimState) => s.modes.parallelTree as ParallelTreeState;
 const jardim = (s: SimState) => s.modes.garden as GardenState;
 const colonia = (s: SimState) => s.modes.colony as ColonyState;
+const vazio = (s: SimState) => s.modes.vazio as VazioState;
 const unlocked = (s: SimState, id: string) => s.meta.purchasedNodes.includes(id);
 
 function a(category: AchievementCategory, id: string, name: string, description: string, check: (s: SimState) => boolean): Achievement {
@@ -112,6 +116,14 @@ export const ACHIEVEMENTS: Achievement[] = [
   a('Colônia', 'o_law5', 'Legislador', 'Aprovar 5 leis', (s) => colonia(s).laws.length >= 5),
   a('Colônia', 'o_lawAll', 'Constituinte', 'Aprovar todas as leis', (s) => colonia(s).laws.length >= LAW_IDS.length),
   a('Colônia', 'o_monument', 'Marco Eterno', 'Erguer um Monumento', (s) => colonia(s).buildings.monumento >= 1),
+
+  a('Vazio', 'v_first', 'Primeira Fenda', 'Selar a primeira fenda do Vazio', (s) => vazio(s).sealed >= 1),
+  a('Vazio', 'v_seal20', 'Guardião', 'Selar 20 fendas', (s) => vazio(s).sealed >= 20),
+  a('Vazio', 'v_dm1k', 'Colecionador de Sombra', 'Acumular 1.000 de Matéria Escura', (s) => vazio(s).totalDarkMatter >= 1_000),
+  a('Vazio', 'v_shadow', 'Núcleo Pleno', 'Levar o Núcleo de Sombra ao máximo', (s) => vazio(s).upgrades.nucleoDeSombra >= 5),
+  a('Vazio', 'v_allUp', 'Domador do Vazio', 'Comprar pelo menos um nível de cada melhoria do Vazio', (s) =>
+    VAZIO_UPGRADE_IDS.every((id) => vazio(s).upgrades[id] >= 1),
+  ),
 
   a('Rede', 'm_ess1k', 'Faísca de Essência', 'Acumular 1K de Essência', (s) => s.meta.totalEssence >= 1e3),
   a('Rede', 'm_ess1m', 'Rio de Essência', 'Acumular 1M de Essência', (s) => s.meta.totalEssence >= 1e6),

@@ -53,6 +53,10 @@ export function anomaliesUnlocked(cosmos: CosmosState): boolean {
   return effects(cosmos).some((e) => e.type === 'unlockAnomalies');
 }
 
+export function weeklyEventsUnlocked(cosmos: CosmosState): boolean {
+  return effects(cosmos).some((e) => e.type === 'weeklyEvents');
+}
+
 /** Cada Singularidade já conquistada (gasta ou não) dá +10% de Essência para sempre. */
 export function singularityMultiplier(cosmos: CosmosState): number {
   return 1 + SINGULARITY_BONUS * cosmos.totalSingularities;

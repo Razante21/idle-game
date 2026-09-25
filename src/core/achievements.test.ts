@@ -16,7 +16,7 @@ describe('achievements', () => {
   it('has unique ids across every category', () => {
     expect(ACHIEVEMENTS.length).toBeGreaterThanOrEqual(40);
     expect(new Set(ACHIEVEMENTS.map((x) => x.id)).size).toBe(ACHIEVEMENTS.length);
-    expect(new Set(ACHIEVEMENTS.map((x) => x.category)).size).toBe(9);
+    expect(new Set(ACHIEVEMENTS.map((x) => x.category)).size).toBe(10);
   });
 
   it('reports only achievements that are newly met', () => {
